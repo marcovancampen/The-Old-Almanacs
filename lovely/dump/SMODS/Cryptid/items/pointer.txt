@@ -1,0 +1,1 @@
+=[SMODS Cryptid "items/pointer.lua"]
