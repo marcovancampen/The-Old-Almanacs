@@ -23,7 +23,7 @@ This modpack restores and preserves **Jen Almanac** (Polterwork), the beloved Cr
 ## Installation
 
 1. Download the modpack
-2. Extract it to: `AppData\Roaming\Balatro\Mods\`
+2. Extract it to: `AppData\Roaming\Balatro\Mods\` (Ensure that the latest lovely is correctly installed in the game's root folder)
 3. Launch Balatro and enjoy!
 
 ## Dependencies
