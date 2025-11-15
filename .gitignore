@@ -1,0 +1,8 @@
+# Local development
+.cursor/
+lovely/
+
+# OS
+.DS_Store
+Thumbs.db
+

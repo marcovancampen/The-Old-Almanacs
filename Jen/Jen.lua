@@ -122,24 +122,49 @@ local function init_jen_safety_systems()
             return _orig_calc_main(context, scoring_hand)
         end
     end
+	
+	-- Crash Fix for nil ability on cards
+	-- Ensure `Card:update` and `Card:update_alert` are robust when `self.ability` is nil. Some mods/edge cases create cards without `ability` set transiently; provide safe defaults.
+	local function _jen_safe_tostring(v)
+		local ok, s = pcall(tostring, v)
+		return ok and s or '<unprintable>'
+	end
 
---	--Crash Fix for nil ability on cards
---	local function safe_update_alert()
---		local original_update_alert = Card.update_alert
---		function Card:update_alert(dt)
---			if not self.ability then
---				return
---			end
---			return original_update_alert(self, dt)
---		end
---		return safe_update_alert()
---	end
+	local function _jen_log_nil_ability(card, ctx)
+		pcall(function()
+			local area = card and card.area or nil
+			local cfg = card and card.config or nil
+			local center = cfg and cfg.center or nil
+			local id = card and (card.id or card.guid or '<no-id>') or '<no-card>'
+			print(('JEN: nil ability found (%s) — id=%s area=%s facing=%s config.center=%s role=%s'):format(
+				ctx or '?',
+				_jen_safe_tostring(id),
+				_jen_safe_tostring(area),
+				_jen_safe_tostring(card and card.facing),
+				_jen_safe_tostring(center),
+				_jen_safe_tostring(card and card.role)
+			))
+		end)
+	end
 
-	-- Wrap Card.update_alert to avoid crashes when `self.ability` is missing. 
-	-- Some mods or edge cases can leave `ability` unset, as we saw in the banned jokers list; in other words, this guard makes UI safe unlike the previous commented-out version which redefined the function every time.
+	-- Wrap Card.update to ensure ability exists and log when it's missing.
+	local _orig_card_update = Card.update
+	function Card:update(...)
+		if not self then
+			return _orig_card_update(self, ...)
+		end
+		if not self.ability then
+			_jen_log_nil_ability(self, 'Card:update')
+			self.ability = {}
+		end
+		return _orig_card_update(self, ...)
+	end
+
+	-- Wrap `update_alert` specifically to avoid crashes and keep existing behavior.
 	local _orig_card_update_alert = Card.update_alert
 	function Card:update_alert(...)
 		if not self or not self.ability then
+			if self then _jen_log_nil_ability(self, 'Card:update_alert') end
 			return
 		end
 		return _orig_card_update_alert(self, ...)
@@ -740,7 +765,16 @@ function Jen:delete_hardbans()
 		if string.sub(v, 1, 1, true) ~= '!' then
 			if G.P_CENTERS[v] then
 				print('Deleting center : ' .. v)
-				SMODS.Center:get_obj(v):delete()
+				-- Safely attempt to delete the center object
+				local success, err = pcall(function()
+					local center_obj = SMODS.Center:get_obj(v)
+					if center_obj and type(center_obj) == 'table' and center_obj.delete then
+						center_obj:delete()
+					end
+				end)
+				if not success then
+					print('[JEN WARNING] Failed to delete center ' .. v .. ': ' .. tostring(err))
+				end
 				-- Instead of fully removing the center entry, replace it with a safe stub.
 				G.P_CENTERS[v] = {
 					_deleted_by_almanac = true,
@@ -2488,14 +2522,14 @@ local function change_blind_size(newsize, instant, silent)
 	if instant then
 		G.GAME.blind.chip_text = number_format(newsize)
 		G.FUNCS.blind_chip_UI_scale(G.hand_text_area.blind_chips)
-		G.HUD_blind:recalculate() 
+		if G.HUD_blind then G.HUD_blind:recalculate() end
 		chips_UI:juice_up()
 		if not silent then play_sound('chips2') end
 	else
 		Q(function()
 			G.GAME.blind.chip_text = number_format(newsize)
 			G.FUNCS.blind_chip_UI_scale(G.hand_text_area.blind_chips)
-			G.HUD_blind:recalculate() 
+			if G.HUD_blind then G.HUD_blind:recalculate() end
 			chips_UI:juice_up()
 			if not silent then play_sound('chips2') end
 			return true
@@ -22671,8 +22705,13 @@ SMODS.Blind	{
 				G.GAME.blind:wiggle()
 				G.GAME.blind.dollars = math.max(1, G.GAME.blind.dollars + pseudorandom('err91_randomisepayout', -1, 2))
 				G.GAME.current_round.dollars_to_be_earned = G.GAME.blind.dollars > 8 and ('$' .. G.GAME.blind.dollars) or (string.rep(localize('$'), G.GAME.blind.dollars)..'')
-				G.HUD_blind:get_UIE_by_ID("dollars_to_be_earned").config.object:update_text()
-				G.HUD_blind:get_UIE_by_ID("dollars_to_be_earned").config.object:juice_up(0.2, 0.2)
+				if G.HUD_blind then
+					local ui_e = G.HUD_blind:get_UIE_by_ID("dollars_to_be_earned")
+					if ui_e and ui_e.config and ui_e.config.object and ui_e.config.object.update_text then
+						ui_e.config.object:update_text()
+						ui_e.config.object:juice_up(0.2, 0.2)
+					end
+				end
 				return true
 			end, 1)
 		end
