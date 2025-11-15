@@ -5,6 +5,57 @@ It contains several branches, each representing a different version or stage of 
 
 This repository has only bugfixes in mind. I do not have in mind to add new mods or support them. I will only fix bugs that come from the main branch.
 
+## Project Status
+
+Currently focused on **fixing bugs and resolving incompatibilities** within Jen Almanac's modpack and its dependencies.
+Current Jen Almanac's version is `0.0.8`.
+
+See [CHANGELOG.md](CHANGELOG.md) for detailed bugfix history.
+
+## Features
+
+This modpack restores and preserves **Jen Almanac** (Polterwork), the beloved Cryptid addon that was discontinued. It includes:
+- Complete Jen Almanac functionality (From what we have recovered)
+- Integrated modpack with carefully curated dependencies
+- Bugfixes for mod conflicts and incompatibilities
+- Stable gameplay experience
+
+## Installation
+
+1. Download the modpack
+2. Extract it to: `AppData\Roaming\Balatro\Mods\`
+3. Launch Balatro and enjoy!
+
+## Dependencies
+
+The following mods are required for Jen Almanac's modpack to function:
+
+- **smods** - Steamodded core framework
+- **Cryptid** - Essential Base Mod
+- **Talisman** - Big number library support
+- **Aurinko** - Companion mod
+- **Nopeus** - Quality-of-life enhancements
+- **JenLib** - Jen Almanac library utilities
+
+All dependencies are included in this modpack and should not be manually installed. Do not update them manually.
+
+## Troubleshooting
+
+**Having issues?** Here are some common solutions:
+
+- Ensure all files are extracted to the correct folder (`AppData\Roaming\Balatro\Mods\`)
+- Verify no mod files are corrupted by re-extracting the modpack
+- Check the game logs for specific error messages
+- Make sure you're using a compatible Balatro version (1.0.1o-FULL recommended)
+
+**Still stuck?** Join our Discord community for support!
+
+## Contributing & Support
+
+For bug reports, questions, or general support, please join our Discord server:
+
+**[Join the Discord Server](https://discord.gg/n7t9Mqufhj)**
+
 ## Branches
 
 *   **`main`**: This is the primary development branch. It contains the stable, working version of the modpack with the latest bugfixes.
