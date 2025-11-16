@@ -6,9 +6,10 @@ All notable changes to Jen Almanac's Modpack will be documented in this file.
 
 ### Fixed
 
-#### Jen Almanac (`Jen/Jen.lua`)
+#### Jen Almanac (`Jen/Jen.lua`, `lovely.toml`)
 - **Retrigger Edition repetitions field typo**: Fixed Retrigger Edition returning `retriggers` instead of `repetitions` field in effect table, preventing log warnings during retrigger checks.
 - **The Saint double trigger on Gateway**: Added `_saint_karma_done` flag check to prevent The Saint from triggering twice per Gateway consumable use, matching the pattern used by other Jokers like P03.
+- **Ban system ignoring `disable_bans` config on save load**: Fixed save load patch in `lovely.toml` unconditionally calling `Jen:delete_hardbans()`, which deleted banned jokers from the pool regardless of the `disable_bans` config setting. Now correctly calls `init_cardbans()` which respects the config option.
 
 ---
 

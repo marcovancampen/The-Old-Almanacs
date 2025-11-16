@@ -214,7 +214,7 @@ end
 for k, v in pairs(G.GAME.ranks) do
 	manage_level_colour(v.level)
 end
-Jen:delete_hardbans()'''
+init_cardbans()'''
 match_indent = true
 
 [[patches]]
