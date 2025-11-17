@@ -948,12 +948,6 @@ end
 '''
 match_indent = true
 
-# Pointer patches - remove exotic from blist (handled in Lua now, but keeping for compatibility)
-[[patches]]
-[patches.pattern]
-target = '''=[SMODS Cryptid "items/pointer.lua"]'''
-pattern = '''Cryptid.pointerblistifytype("rarity", "cry_exotic", nil)'''
-position = "at"
-payload = ''' '''
-match_indent = true
+# Note: We do NOT patch out Cryptid's exotic blacklist - let Cryptid handle it natively
+# P03 joker will dynamically enable exotic creation when present
 

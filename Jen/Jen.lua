@@ -99,7 +99,8 @@ local function init_jen_safety_systems()
         end
     end
     
-    -- Initialize Cryptid compatibility functions (gameset, encoded deck, etc.)
+    -- Initialize Cryptid compatibility functions (gameset, update_hand_text wrapper)
+    -- Note: Encoded deck setup is done later in process_loc_text after all mods load
     if jl and jl.init_all_cryptid_compat then
         jl.init_all_cryptid_compat()
     end
@@ -6635,6 +6636,20 @@ SMODS.Joker {
 	atlas = 'jenp03',
 	in_pool = function()
 		return #SMODS.find_card('j_jen_disappointment') <= 0
+	end,
+	add_to_deck = function(self, card, from_debuff)
+		-- When P03 is added, remove exotic from POINTER:// blacklist
+		if Cryptid and Cryptid.pointerblistifytype then
+			Cryptid.pointerblistifytype("rarity", "cry_exotic", true) -- true = remove from blacklist
+			print("[JEN DEBUG] P03 added - enabled Exotic creation in POINTER://")
+		end
+	end,
+	remove_from_deck = function(self, card, from_debuff)
+		-- When P03 is removed, re-add exotic to POINTER:// blacklist
+		if Cryptid and Cryptid.pointerblistifytype then
+			Cryptid.pointerblistifytype("rarity", "cry_exotic", false) -- false = add to blacklist
+			print("[JEN DEBUG] P03 removed - disabled Exotic creation in POINTER://")
+		end
 	end,
     loc_vars = function(self, info_queue, center)
         return {vars = {center.ability.codes, (G.GAME or {}).p03_codereq or 3}}
@@ -23206,22 +23221,47 @@ function SMODS.current_mod.process_loc_text()
 	G.localization.misc.dictionary["b_suits"] = "Suits"
 	G.localization.misc.dictionary["b_ranks"] = "Ranks"
 	
-	-- Cryptid POINTER:// compatibility - set localization for pointer description
-	-- This allows POINTER:// to show correct description for Jen cards
-	if Cryptid then
-		G.localization.descriptions.Other["jen_pointer"] = {
-			name = "POINTER://",
-			text = {
-				"Create a card",
-				"of {C:cry_code}your choice",
-				"{C:inactive,s:0.8}(Exotic Jokers and OMEGA consumables excluded)",
-			},
-		}
+	-- Cryptid POINTER:// compatibility - override description to mention OMEGA consumables
+	-- Update both localization and card center if they exist
+	
+	-- Initialize Cryptid Encoded deck (must run after all mods load)
+	if jl and jl.setup_encoded_deck then
+		jl.setup_encoded_deck()
 	end
 	
-	-- Initialize Cryptid pointer aliases after all cards are loaded
-	if jl and jl.setup_pointer_aliases and jl.setup_pointer_blacklist then
-		jl.setup_pointer_blacklist()
-		jl.setup_pointer_aliases()
-	end
+	-- Note: Pointer blacklist/aliases are set up at module level (end of file)
+	-- not here, because they need to run earlier in the load sequence
+end
+-- ========================================
+-- CRYPTID COMPATIBILITY - MODULE LEVEL INIT
+-- These must run at module load time, not inside functions
+-- ========================================
+
+-- Setup Cryptid pointer compatibility immediately when mod loads
+if Cryptid and jl then
+    print('[JEN DEBUG] Running module-level Cryptid pointer setup')
+    
+    -- Update POINTER:// card description if it exists
+    if G and G.P_CENTERS and G.P_CENTERS.c_cry_pointer then
+        G.P_CENTERS.c_cry_pointer.config.extra = "(Exotic Jokers and OMEGA consumables excluded)"
+        print('[JEN DEBUG] Updated POINTER:// card center description')
+    end
+    
+    -- Check if pointer functions exist
+    if Cryptid.pointerblistifytype and Cryptid.pointeraliasify then
+        print('[JEN DEBUG] Cryptid pointer functions found, setting up blacklist and aliases')
+        
+        -- Setup blacklist and aliases immediately
+        if jl.setup_pointer_blacklist then
+            jl.setup_pointer_blacklist()
+        end
+        
+        if jl.setup_pointer_aliases then
+            jl.setup_pointer_aliases()
+        end
+    else
+        print('[JEN DEBUG] Cryptid pointer functions not available yet')
+    end
+else
+    print('[JEN DEBUG] Cryptid or JenLib not available for module-level init')
 end

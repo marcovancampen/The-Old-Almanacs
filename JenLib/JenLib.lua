@@ -1324,6 +1324,17 @@ function jl.safe_color(color)
     return color or G.C.WHITE or {1, 1, 1, 1}
 end
 
+-- Get all keys from a table (for debugging)
+function jl.get_table_keys(tbl)
+    local keys = {}
+    if type(tbl) == "table" then
+        for k, v in pairs(tbl) do
+            table.insert(keys, tostring(k))
+        end
+    end
+    return keys
+end
+
 -- ========================================
 -- CRYPTID COMPATIBILITY SYSTEM
 -- ========================================
@@ -1367,9 +1378,21 @@ end
 -- Setup pointer blacklist for Jen cards
 -- Prevents Jen's custom rarities and omega consumables from appearing in POINTER://
 function jl.setup_pointer_blacklist()
-    if not Cryptid or not Cryptid.pointerblistifytype then return end
+    if not Cryptid then
+        print("[JEN DEBUG] Cryptid not found, skipping pointer blacklist setup")
+        return
+    end
+    
+    if not Cryptid.pointerblistifytype then
+        print("[JEN DEBUG] Cryptid.pointerblistifytype not found, skipping pointer blacklist setup")
+        print("[JEN DEBUG] Available Cryptid functions: " .. table.concat(jl.get_table_keys(Cryptid), ", "))
+        return
+    end
     
     print("[JEN DEBUG] Setting up Cryptid POINTER:// blacklist for Jen items")
+    
+    -- Note: We do NOT blacklist cry_exotic here - Cryptid handles it natively
+    -- P03 joker dynamically enables exotic creation when present in the run
     
     -- Blacklist Jen custom rarities
     Cryptid.pointerblistifytype("rarity", "jen_wondrous")
@@ -1380,15 +1403,25 @@ function jl.setup_pointer_blacklist()
     Cryptid.pointerblistifytype("rarity", "jen_omnipotent")
     Cryptid.pointerblistifytype("rarity", "jen_miscellaneous")
     Cryptid.pointerblistifytype("rarity", "jen_junk")
+    print("[JEN DEBUG] Blacklisted Jen custom rarities")
     
     -- Blacklist Jen omega consumables
     Cryptid.pointerblistifytype("set", "jen_omegaconsumable")
+    print("[JEN DEBUG] Blacklisted jen_omegaconsumable set")
 end
 
 -- Setup pointer aliases for easy creation of Jen cards via POINTER://
 -- Allows shortened names like "kosmos" instead of full card keys
 function jl.setup_pointer_aliases()
-    if not Cryptid or not Cryptid.pointeraliasify then return end
+    if not Cryptid then
+        print("[JEN DEBUG] Cryptid not found, skipping pointer aliases setup")
+        return
+    end
+    
+    if not Cryptid.pointeraliasify then
+        print("[JEN DEBUG] Cryptid.pointeraliasify not found, skipping pointer aliases setup")
+        return
+    end
     
     print("[JEN DEBUG] Setting up Cryptid POINTER:// aliases for Jen cards")
     
@@ -1526,7 +1559,7 @@ function jl.setup_encoded_deck()
     })
 end
 
--- Initialize all Cryptid compatibility features
+-- Initialize all Cryptid compatibility features (early init - no deck ownership yet)
 function jl.init_all_cryptid_compat()
     if not Cryptid then 
         print("[JEN DEBUG] Cryptid not detected, skipping compatibility setup")
@@ -1534,9 +1567,8 @@ function jl.init_all_cryptid_compat()
     end
     
     jl.init_cryptid_compat()
-    jl.setup_encoded_deck()
     jl.wrap_update_hand_text()
     
-    -- Note: Pointer blacklist and aliases should be called after Jen's cards are loaded
-    -- This will be done from Jen's main file
+    -- Note: Encoded deck setup and pointer blacklist/aliases should be called after 
+    -- all mods are loaded. This will be done from Jen's process_loc_text
 end

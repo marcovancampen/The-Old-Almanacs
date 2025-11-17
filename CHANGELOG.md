@@ -2,7 +2,67 @@
 
 All notable changes to Jen Almanac's Modpack will be documented in this file.
 
-## [0.0.8-v5]
+## [17/11/2025]
+
+### Added
+
+#### CryptidAlmanacCompat Integration
+- **Integrated all CryptidAlmanacCompat functionality into Jen and JenLib** - The separate compatibility mod is no longer needed
+  - **Cryptid Encoded Deck Support** (`JenLib.lua`): Modified encoded deck behavior to spawn only Code Joker, removing the banned Copy/Paste joker
+  - **POINTER:// Blacklist System** (`JenLib.lua`): Prevents creation of Jen's custom rarities and OMEGA consumables via POINTER://
+  - **P03 Dynamic Exotic Control** (`Jen.lua`): P03 joker now dynamically enables/disables Exotic joker creation in POINTER:// when added/removed from deck
+  - **Gameset Override** (`JenLib.lua`): Forces "madness" gameset for all Jen cards and disables gameset selector UI
+  - **Safety Wrappers** (`JenLib.lua`): Added `update_hand_text` color safety wrapper to prevent crashes
+
+#### JenLib (`JenLib.lua`) - v0.4.1
+- **Cryptid Compatibility System** - New module with comprehensive Cryptid integration functions:
+  - `jl.init_cryptid_compat()` - Gameset override and config modifications
+  - `jl.setup_encoded_deck()` - Takes ownership of Cryptid's Encoded deck with existence checks
+  - `jl.setup_pointer_blacklist()` - Blacklists Jen custom rarities and OMEGA consumables (NOT exotics - handled by P03)
+  - `jl.setup_pointer_aliases()` - Registers 40+ card name shortcuts for easy POINTER:// creation
+  - `jl.wrap_update_hand_text()` - Safety wrapper for hand text updates
+  - `jl.get_table_keys()` - Debug utility for inspecting table contents
+- **Existence checks for Cryptid objects** - All compatibility functions gracefully skip if Cryptid isn't installed or objects don't exist yet
+
+#### Jen Almanac (`Jen.lua`)
+- **P03 Joker Enhancement** - Implemented dynamic exotic control:
+  - `add_to_deck()` - Removes `cry_exotic` from POINTER:// blacklist when P03 is obtained
+  - `remove_from_deck()` - Re-adds `cry_exotic` to blacklist when P03 is sold/removed
+  - Makes P03's description text ("can now create Exotic Jokers") actually functional
+- **Module-level Cryptid initialization** - Pointer blacklist and aliases setup runs immediately at mod load time for proper timing
+- **process_loc_text integration** - Calls Encoded deck setup after all mods are loaded
+- **Early compatibility init** - Gameset override and safety wrappers init during safety systems setup
+
+#### Jen lovely.toml
+- **Cryptid Compatibility Patches** - Added 3 patches for Cryptid integration:
+  - **Code card fallback patch**: Changes default crash recovery card from `c_cry_crash` to `c_cry_oboe` (prevents crashes since crash card is banned)
+  - **Profile prefix patch**: Changes Cryptid save profile prefix from "M" to "J" for Jen
+  - **Tutorial auto-skip patch**: Automatically completes Cryptid intro and sets gameset to "madness"
+
+### Changed
+
+#### Load Order Optimization
+- **Separated early and late initialization** - Gameset/safety wrappers run early, deck ownership runs late after all mods load
+- **Module-level vs function-level execution** - Pointer setup runs at module load time instead of inside `process_loc_text()` for proper timing
+
+### Fixed
+
+#### Cryptid Encoded Deck
+- **Crash on deck ownership before Cryptid loads** - Added existence check for `SMODS.Back.obj_buffer["b_cry_encoded"]` before attempting take_ownership
+- **Copy/Paste joker spawning on Encoded deck** - Properly overrides deck behavior to only spawn Code Joker
+
+#### POINTER:// System
+- **Exotic joker control** - Cryptid handles exotic blacklist natively, P03 joker dynamically enables/disables exotic creation
+- **Pointer functions not running** - Moved setup from `process_loc_text()` to module-level execution at file load time
+- **Module availability timing** - Added comprehensive debug logging and checks for Cryptid function existence
+- **P03 functional enhancement** - Original compat mod had non-functional P03 description; now actually controls exotic availability
+
+### Removed
+
+- **CryptidAlmanacCompat mod dependency** - All functionality successfully integrated into Jen/JenLib
+---
+
+## [16/11/2025]
 
 ### Fixed
 
@@ -13,7 +73,7 @@ All notable changes to Jen Almanac's Modpack will be documented in this file.
 
 ---
 
-## [0.0.8-v4]
+## [15/11/2025]
 
 ### Fixed
 
@@ -39,7 +99,7 @@ All notable changes to Jen Almanac's Modpack will be documented in this file.
 
 ---
 
-## [0.0.8-v3]
+## [10/11/2025]
 
 ### Added
 
