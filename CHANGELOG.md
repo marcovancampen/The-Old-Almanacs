@@ -2,6 +2,30 @@
 
 All notable changes to Jen Almanac's Modpack will be documented in this file.
 
+## [22/11/2025]
+
+### Fixed
+
+#### Jen Almanac (`Jen/Jen.lua`)
+- **Token consumable crash prevention and Cryptid integration**: Fixed crash when using Token consumables (Double, Triple, Quadruple, Quintuple, etc...) immediately after loading a save. The issue occurred because modded tag definitions (from Cryptid) weren't fully initialized, causing `tag.lua:537` to crash with "attempt to index nil with key 'atlas'".
+  - Added `G.P_TAGS` existence checks before creating tags in both `use()` and `bulk_use()` functions
+  - Implemented deferred tag creation fallback: if tag definitions aren't ready, tag creation is delayed to the next event frame when mods are fully loaded
+  - Prevents game freeze and cascade errors in Cryptid voucher system that occurred after the initial crash
+- **Token consumable pool integration with Cryptid gameset system**: Token consumables now respect Cryptid's tag enable/disable settings
+  - Added `in_pool()` function to all Token consumables that checks if the corresponding Cryptid tag is available
+  - Tokens for disabled tags (e.g., Triple, Quadruple, Quintuple) no longer appear in shops or packs when Cryptid has disabled those tags
+  - Prevents user confusion from obtaining unusable consumables when tags are disabled via Cryptid settings
+
+#### JenLib (`JenLib/JenLib.lua`)
+- **Cleaned up debug output**: Removed verbose debug print statement from Card metatable patching
+
+### Changed
+
+#### JenLib (`JenLib/JenLib.lua`)
+- **Added attribution comment**: Added NOTE crediting TCM Murray for library modifications
+
+---
+
 ## [17/11/2025]
 
 ### Added
@@ -33,11 +57,14 @@ All notable changes to Jen Almanac's Modpack will be documented in this file.
 - **process_loc_text integration** - Calls Encoded deck setup after all mods are loaded
 - **Early compatibility init** - Gameset override and safety wrappers init during safety systems setup
 
-#### Jen lovely.toml
+#### Jen (`lovely.toml`)
 - **Cryptid Compatibility Patches** - Added 3 patches for Cryptid integration:
   - **Code card fallback patch**: Changes default crash recovery card from `c_cry_crash` to `c_cry_oboe` (prevents crashes since crash card is banned)
   - **Profile prefix patch**: Changes Cryptid save profile prefix from "M" to "J" for Jen
   - **Tutorial auto-skip patch**: Automatically completes Cryptid intro and sets gameset to "madness"
+
+#### lua_patcher
+- **Added lua_patcher mod** - A utility mod that prevents common Lua errors by redefining Lua operations to return safe values instead of throwing errors.
 
 ### Changed
 

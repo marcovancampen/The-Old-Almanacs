@@ -8,6 +8,9 @@
 --- PREFIX: jenlib
 --- VERSION: 0.4.1
 --- LOADER_VERSION_GEQ: 1.0.0
+--- NOTE: This library (JenLib) has been modified by TCM Murray.
+
+
 
 --Global table, don't modify!
 jl = {}
@@ -41,8 +44,6 @@ end
 -- Apply the metatable patch
 original_card_mt.__index = safe_card_index
 setmetatable(Card, original_card_mt)
-
-print("[JEN DEBUG] Card metatable patched to provide can_calculate method safely")
 
 -- ========================================
 -- CRASH MONITORING AND DEBUG SYSTEM

@@ -13601,17 +13601,55 @@ for k, v in pairs(supported_tags) do
 		atlas = 'jentokens',
 		can_stack = true,
 		can_divide = true,
+		in_pool = function(self)
+			-- Check if the corresponding tag exists and is not disabled by Cryptid
+			local tag_key = v[1]
+			if not G.P_TAGS or not G.P_TAGS[tag_key] then
+				return false
+			end
+			-- Check if Cryptid has disabled this tag
+			local tag_obj = G.P_TAGS[tag_key]
+			if tag_obj and tag_obj.cry_disabled then
+				return false
+			end
+			return true
+		end,
 		can_use = function(self, card)
 			return jl.canuse()
 		end,
 		use = function(self, card, area, copier)
 			play_sound('jen_e_gilded', 1.25, 0.4)
-			add_tag(Tag(v[1]))
+			local tag_key = v[1]
+			if G.P_TAGS and G.P_TAGS[tag_key] then
+				add_tag(Tag(tag_key))
+			else
+				-- Fallback: delay tag creation until next frame when mods are fully loaded
+				G.E_MANAGER:add_event(Event({
+					func = function()
+						if G.P_TAGS and G.P_TAGS[tag_key] then
+							add_tag(Tag(tag_key))
+						end
+						return true
+					end
+				}))
+			end
 		end,
 		bulk_use = function(self, card, area, copier, number)
 			play_sound('jen_e_gilded', 1.25, 0.4)
+			local tag_key = v[1]
 			for i = 1, number do
-				add_tag(Tag(v[1]))
+				if G.P_TAGS and G.P_TAGS[tag_key] then
+					add_tag(Tag(tag_key))
+				else
+					G.E_MANAGER:add_event(Event({
+						func = function()
+							if G.P_TAGS and G.P_TAGS[tag_key] then
+								add_tag(Tag(tag_key))
+							end
+							return true
+						end
+					}))
+				end
 			end
 		end
 	}
@@ -23232,6 +23270,7 @@ function SMODS.current_mod.process_loc_text()
 	-- Note: Pointer blacklist/aliases are set up at module level (end of file)
 	-- not here, because they need to run earlier in the load sequence
 end
+
 -- ========================================
 -- CRYPTID COMPATIBILITY - MODULE LEVEL INIT
 -- These must run at module load time, not inside functions
@@ -23301,6 +23340,5 @@ function Game:start_run(args)
             return true
         end
     }))
-    
     return result
 end
