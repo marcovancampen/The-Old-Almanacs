@@ -1534,6 +1534,11 @@ function gameover()
 	G.STATE_COMPLETE = true
 end
 
+if not AllowStacking then AllowStacking = function() end end
+if not AllowDividing then AllowDividing = function() end end
+if not AllowMassUsing then AllowMassUsing = function() end end
+if not AllowBulkUse then AllowBulkUse = function() end end
+
 AllowStacking('jen_ability')
 AllowStacking('jen_omegaconsumable')
 AllowStacking('jen_tokens')
@@ -8513,7 +8518,7 @@ SMODS.Joker {
 						message = 'Woag!',
 						repetitions = totalnoise(),
 						colour = G.C.YELLOW,
-						nopeus_again = true,
+						-- nopeus_again = true,
 						card = card
 					}
 				end
@@ -8826,7 +8831,7 @@ SMODS.Joker {
 						return {
 							message = koslo_flavour[math.random(#koslo_flavour)],
 							repetitions = 88,
-							nopeus_again = true,
+							-- nopeus_again = true,
 							colour = G.C.RED,
 							card = card
 						}
@@ -21379,7 +21384,9 @@ function CardArea:add_to_highlighted(card, silent)
 		end
 		if #self.highlighted < surreals + self.config.highlighted_limit or jl.bf(card.ability.name, ignorelimit_playingcards) or exception then
 			self.highlighted[#self.highlighted+1] = card
-			card:highlight(true)
+			if card.children and card.children.center then
+				card:highlight(true)
+			end
 			if not silent then play_sound('cardSlide1') end
 			if self == G.hand and G.STATE == G.STATES.SELECTING_HAND then
 				self:parse_highlighted()
@@ -21387,7 +21394,9 @@ function CardArea:add_to_highlighted(card, silent)
 			return
 		end
 	end
-	athr(self,card,silent)
+	if card and card.children and card.children.center then
+		athr(self,card,silent)
+	end
 end
 
 local csar = Card.set_ability
@@ -21408,7 +21417,49 @@ function unlock_achievement(achievement_name)
 	return
 end
 
--- BOOSTERS
+
+-- Add can_reserve_card function for Reservia voucher
+G.FUNCS.can_reserve_card = function(e)
+	if e.config.ref_table then
+		local card = e.config.ref_table
+		if card.ability.consumeable then
+			-- Check if we can still reserve cards (room in consumable area AND pack has choices remaining)
+			if #G.consumeables.cards < G.consumeables.config.card_limit and G.GAME.pack_choices and G.GAME.pack_choices > 0 then
+				e.config.colour = G.C.GREEN
+				e.config.button = 'reserve_card'
+			else
+				e.config.colour = G.C.UI.BACKGROUND_INACTIVE
+				e.config.button = nil
+			end
+		end
+	end
+end
+
+-- Add reserve_card function to handle the reserve button action
+G.FUNCS.reserve_card = function(e)
+	local card = e.config.ref_table
+	if card and card.area == G.pack_cards and card.ability.consumeable then
+		local cen = card.gc and card:gc()
+		if cen and ((Jen.hv('reserve', 1) and cen.set == 'Planet') or (Jen.hv('reserve', 2) and cen.set == 'Tarot') or (Jen.hv('reserve', 3) and cen.set == 'Spectral')) then
+			-- This is a reserve action, add to consumable tray
+			if #G.consumeables.cards < G.consumeables.config.card_limit and G.GAME.pack_choices and G.GAME.pack_choices > 0 then
+				card.area:remove_card(card)
+				card:add_to_deck()
+				G.consumeables:emplace(card)
+				play_sound('card1')
+				
+				-- Decrement the pack's choice counter
+				G.GAME.pack_choices = G.GAME.pack_choices - 1
+				
+				-- Check if we've used all choices and should close the pack
+				if G.GAME.pack_choices <= 0 then
+					G.FUNCS.skip_booster(e)
+				end
+			end
+		end
+	end
+end
+
 local guiduasbr = G.UIDEF.use_and_sell_buttons
 function G.UIDEF.use_and_sell_buttons(card)
 	if (card.area == G.pack_cards and G.pack_cards) and card.ability.consumeable then

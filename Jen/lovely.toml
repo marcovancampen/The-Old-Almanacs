@@ -146,7 +146,7 @@ position = "after"
 payload = '''if context.cardarea == G.play then
 	if self.edition and self.edition.jen_wee and context.other_card:get_id() == 2 then
 		if ((self.config or {}).center or {}).wee_incompatible or ((self.config or {}).center or {}).key == 'j_cry_weegaming' then
-			card_eval_status_text(self, 'extra', nil, nil, nil, {message = 'Can\'t upgrade!', nopeus_again = true, colour = G.C.RED})
+			card_eval_status_text(self, 'extra', nil, nil, nil, {message = 'Can\'t upgrade!',colour = G.C.RED})
 		else
 			self.edition.twos_scored = (self.edition.twos_scored or 0) + (G.GAME.weeck and 3 or 1)
 			card_eval_status_text(self, 'extra', nil, nil, nil, {message = localize('k_upgrade_ex') .. " : " .. (tostring(100 + (8*self.edition.twos_scored)) .. '%'), colour = G.C.DARK_EDITION})
