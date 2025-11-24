@@ -2769,6 +2769,36 @@ local maxie_added = 0
 
 local misc_done = false
 
+-- Hook modulate_sound to fix big number comparison issues
+local modulate_sound_ref = modulate_sound
+function modulate_sound(dt)
+	-- Helper function to safely convert big numbers to regular numbers
+	local function safe_to_number(val)
+		if type(val) == 'table' and val.to_number then
+			-- It's a big number, convert it
+			return val:to_number()
+		elseif type(val) == 'number' then
+			-- Already a number
+			return val
+		else
+			-- Fallback
+			return 0
+		end
+	end
+	
+	-- Convert all score_intensity values to regular numbers before calling base function
+	if G.ARGS and G.ARGS.score_intensity then
+		for k, v in pairs(G.ARGS.score_intensity) do
+			if type(v) == 'table' and v.to_number then
+				G.ARGS.score_intensity[k] = safe_to_number(v)
+			end
+		end
+	end
+	
+	-- Call the original function
+	return modulate_sound_ref(dt)
+end
+
 local game_updateref = Game.update
 function Game:update(dt)
 	-- Safely wrap the original update call to prevent crashes
@@ -2901,9 +2931,42 @@ function Game:update(dt)
 		
 	end
 	if G.GAME then
-		if G.ARGS.score_intensity.earned_score then
-			if not to_big(G.ARGS.score_intensity.earned_score):isFinite() then
-				G.ARGS.score_intensity.earned_score = to_big(G.ARGS.score_intensity.required_score)
+		-- Fix for modulate_sound crash: Convert big numbers to regular numbers
+		-- The base game's modulate_sound function doesn't handle big numbers properly
+		if G.ARGS and G.ARGS.score_intensity then
+			-- Helper function to safely convert big numbers to regular numbers
+			local function safe_to_number(val)
+				if type(val) == 'table' and val.to_number then
+					-- It's a big number, convert it
+					return val:to_number()
+				elseif type(val) == 'number' then
+					-- Already a number
+					return val
+				else
+					-- Fallback
+					return 0
+				end
+			end
+			
+			-- Convert all score_intensity values to regular numbers
+			if G.ARGS.score_intensity.earned_score then
+				local earned = to_big(G.ARGS.score_intensity.earned_score)
+				if not earned:isFinite() then
+					G.ARGS.score_intensity.earned_score = safe_to_number(to_big(G.ARGS.score_intensity.required_score))
+				else
+					G.ARGS.score_intensity.earned_score = safe_to_number(earned)
+				end
+			end
+			
+			if G.ARGS.score_intensity.required_score then
+				G.ARGS.score_intensity.required_score = safe_to_number(G.ARGS.score_intensity.required_score)
+			end
+			
+			-- Convert any other potential big number fields in score_intensity
+			for k, v in pairs(G.ARGS.score_intensity) do
+				if type(v) == 'table' and v.to_number then
+					G.ARGS.score_intensity[k] = safe_to_number(v)
+				end
 			end
 		end
 		if not Jen.config.disable_bans and G.GAME.banned_keys then
