@@ -8424,18 +8424,18 @@ function Card:use_consumeable(area, copier)
 		elseif cen.key == 'c_black_hole' then
 			if Jen.hv('singularity', 3) then
 				for k, v in pairs(G.GAME.suits) do
-					level_up_suit(self, k, true, (Jen.hv('singularity', 6) and 300 or Jen.hv('singularity', 4) and 25 or 1) * self:getEvalQty())
+					level_up_suit(self, k, true, (Jen.hv('singularity', 6) and 300 or Jen.hv('singularity', 4) and 25 or 1) * (self:getEvalQty() or 1))
 				end
 				for k, v in pairs(G.GAME.ranks) do
-					level_up_rank(self, k, true, (Jen.hv('singularity', 6) and 300 or Jen.hv('singularity', 4) and 25 or 1) * self:getEvalQty())
+					level_up_rank(self, k, true, (Jen.hv('singularity', 6) and 300 or Jen.hv('singularity', 4) and 25 or 1) * (self:getEvalQty() or 1))
 				end
 			end
 			if Jen.hv('singularity', 4) then
-				black_hole_effect(self, ((Jen.hv('singularity', 6) and 300 or 25) * self:getEvalQty()) - self:getEvalQty())
+				black_hole_effect(self, ((Jen.hv('singularity', 6) and 300 or Jen.hv('singularity', 4) and 25 or 1) * (self:getEvalQty() or 1)) - (self:getEvalQty() or 1))
 			end
 			if Jen.hv('singularity', 5) then
 				local successful_rolls = 0
-				local rolls_remaining = self:getEvalQty()
+				local rolls_remaining = self:getEvalQty() or 1
 				while successful_rolls < 100 and rolls_remaining > 1 do
 					if jl.chance('singularity5_roll', 10, true) then
 						successful_rolls = successful_rolls + 1
@@ -8456,18 +8456,18 @@ function Card:use_consumeable(area, copier)
 			end
 			if Jen.hv('singularity', 7) then
 				for k, v in pairs(G.GAME.hands) do
-					G.GAME.hands[k].l_chips = G.GAME.hands[k].l_chips * (to_big(2) ^ self:getEvalQty())
-					G.GAME.hands[k].l_mult = G.GAME.hands[k].l_mult * (to_big(2) ^ self:getEvalQty())
+					G.GAME.hands[k].l_chips = G.GAME.hands[k].l_chips * (to_big(2) ^ (self:getEvalQty() or 1))
+					G.GAME.hands[k].l_mult = G.GAME.hands[k].l_mult * (to_big(2) ^ (self:getEvalQty() or 1))
 				end
 			end
 			if Jen.hv('singularity', 8) then
 				for k, v in pairs(G.GAME.suits) do
-					G.GAME.suits[k].l_chips = G.GAME.suits[k].l_chips * (to_big(2) ^ self:getEvalQty())
-					G.GAME.suits[k].l_mult = G.GAME.suits[k].l_mult * (to_big(2) ^ self:getEvalQty())
+					G.GAME.suits[k].l_chips = G.GAME.suits[k].l_chips * (to_big(2) ^ (self:getEvalQty() or 1))
+					G.GAME.suits[k].l_mult = G.GAME.suits[k].l_mult * (to_big(2) ^ (self:getEvalQty() or 1))
 				end
 				for k, v in pairs(G.GAME.ranks) do
-					G.GAME.ranks[k].l_chips = G.GAME.ranks[k].l_chips * (to_big(2) ^ self:getEvalQty())
-					G.GAME.ranks[k].l_mult = G.GAME.ranks[k].l_mult * (to_big(2) ^ self:getEvalQty())
+					G.GAME.ranks[k].l_chips = G.GAME.ranks[k].l_chips * (to_big(2) ^ (self:getEvalQty() or 1))
+					G.GAME.ranks[k].l_mult = G.GAME.ranks[k].l_mult * (to_big(2) ^ (self:getEvalQty() or 1))
 				end
 			end
 		elseif cen.key == 'c_jen_soul_omega' then
