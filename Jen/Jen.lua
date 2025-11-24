@@ -2769,6 +2769,36 @@ local maxie_added = 0
 
 local misc_done = false
 
+-- Hook modulate_sound to fix big number comparison issues
+local modulate_sound_ref = modulate_sound
+function modulate_sound(dt)
+	-- Helper function to safely convert big numbers to regular numbers
+	local function safe_to_number(val)
+		if type(val) == 'table' and val.to_number then
+			-- It's a big number, convert it
+			return val:to_number()
+		elseif type(val) == 'number' then
+			-- Already a number
+			return val
+		else
+			-- Fallback
+			return 0
+		end
+	end
+	
+	-- Convert all score_intensity values to regular numbers before calling base function
+	if G.ARGS and G.ARGS.score_intensity then
+		for k, v in pairs(G.ARGS.score_intensity) do
+			if type(v) == 'table' and v.to_number then
+				G.ARGS.score_intensity[k] = safe_to_number(v)
+			end
+		end
+	end
+	
+	-- Call the original function
+	return modulate_sound_ref(dt)
+end
+
 local game_updateref = Game.update
 function Game:update(dt)
 	-- Safely wrap the original update call to prevent crashes
@@ -2901,9 +2931,42 @@ function Game:update(dt)
 		
 	end
 	if G.GAME then
-		if G.ARGS.score_intensity.earned_score then
-			if not to_big(G.ARGS.score_intensity.earned_score):isFinite() then
-				G.ARGS.score_intensity.earned_score = to_big(G.ARGS.score_intensity.required_score)
+		-- Fix for modulate_sound crash: Convert big numbers to regular numbers
+		-- The base game's modulate_sound function doesn't handle big numbers properly
+		if G.ARGS and G.ARGS.score_intensity then
+			-- Helper function to safely convert big numbers to regular numbers
+			local function safe_to_number(val)
+				if type(val) == 'table' and val.to_number then
+					-- It's a big number, convert it
+					return val:to_number()
+				elseif type(val) == 'number' then
+					-- Already a number
+					return val
+				else
+					-- Fallback
+					return 0
+				end
+			end
+			
+			-- Convert all score_intensity values to regular numbers
+			if G.ARGS.score_intensity.earned_score then
+				local earned = to_big(G.ARGS.score_intensity.earned_score)
+				if not earned:isFinite() then
+					G.ARGS.score_intensity.earned_score = safe_to_number(to_big(G.ARGS.score_intensity.required_score))
+				else
+					G.ARGS.score_intensity.earned_score = safe_to_number(earned)
+				end
+			end
+			
+			if G.ARGS.score_intensity.required_score then
+				G.ARGS.score_intensity.required_score = safe_to_number(G.ARGS.score_intensity.required_score)
+			end
+			
+			-- Convert any other potential big number fields in score_intensity
+			for k, v in pairs(G.ARGS.score_intensity) do
+				if type(v) == 'table' and v.to_number then
+					G.ARGS.score_intensity[k] = safe_to_number(v)
+				end
 			end
 		end
 		if not Jen.config.disable_bans and G.GAME.banned_keys then
@@ -8361,18 +8424,18 @@ function Card:use_consumeable(area, copier)
 		elseif cen.key == 'c_black_hole' then
 			if Jen.hv('singularity', 3) then
 				for k, v in pairs(G.GAME.suits) do
-					level_up_suit(self, k, true, (Jen.hv('singularity', 6) and 300 or Jen.hv('singularity', 4) and 25 or 1) * self:getEvalQty())
+					level_up_suit(self, k, true, (Jen.hv('singularity', 6) and 300 or Jen.hv('singularity', 4) and 25 or 1) * (self:getEvalQty() or 1))
 				end
 				for k, v in pairs(G.GAME.ranks) do
-					level_up_rank(self, k, true, (Jen.hv('singularity', 6) and 300 or Jen.hv('singularity', 4) and 25 or 1) * self:getEvalQty())
+					level_up_rank(self, k, true, (Jen.hv('singularity', 6) and 300 or Jen.hv('singularity', 4) and 25 or 1) * (self:getEvalQty() or 1))
 				end
 			end
 			if Jen.hv('singularity', 4) then
-				black_hole_effect(self, ((Jen.hv('singularity', 6) and 300 or 25) * self:getEvalQty()) - self:getEvalQty())
+				black_hole_effect(self, ((Jen.hv('singularity', 6) and 300 or Jen.hv('singularity', 4) and 25 or 1) * (self:getEvalQty() or 1)) - (self:getEvalQty() or 1))
 			end
 			if Jen.hv('singularity', 5) then
 				local successful_rolls = 0
-				local rolls_remaining = self:getEvalQty()
+				local rolls_remaining = self:getEvalQty() or 1
 				while successful_rolls < 100 and rolls_remaining > 1 do
 					if jl.chance('singularity5_roll', 10, true) then
 						successful_rolls = successful_rolls + 1
@@ -8393,18 +8456,18 @@ function Card:use_consumeable(area, copier)
 			end
 			if Jen.hv('singularity', 7) then
 				for k, v in pairs(G.GAME.hands) do
-					G.GAME.hands[k].l_chips = G.GAME.hands[k].l_chips * (to_big(2) ^ self:getEvalQty())
-					G.GAME.hands[k].l_mult = G.GAME.hands[k].l_mult * (to_big(2) ^ self:getEvalQty())
+					G.GAME.hands[k].l_chips = G.GAME.hands[k].l_chips * (to_big(2) ^ (self:getEvalQty() or 1))
+					G.GAME.hands[k].l_mult = G.GAME.hands[k].l_mult * (to_big(2) ^ (self:getEvalQty() or 1))
 				end
 			end
 			if Jen.hv('singularity', 8) then
 				for k, v in pairs(G.GAME.suits) do
-					G.GAME.suits[k].l_chips = G.GAME.suits[k].l_chips * (to_big(2) ^ self:getEvalQty())
-					G.GAME.suits[k].l_mult = G.GAME.suits[k].l_mult * (to_big(2) ^ self:getEvalQty())
+					G.GAME.suits[k].l_chips = G.GAME.suits[k].l_chips * (to_big(2) ^ (self:getEvalQty() or 1))
+					G.GAME.suits[k].l_mult = G.GAME.suits[k].l_mult * (to_big(2) ^ (self:getEvalQty() or 1))
 				end
 				for k, v in pairs(G.GAME.ranks) do
-					G.GAME.ranks[k].l_chips = G.GAME.ranks[k].l_chips * (to_big(2) ^ self:getEvalQty())
-					G.GAME.ranks[k].l_mult = G.GAME.ranks[k].l_mult * (to_big(2) ^ self:getEvalQty())
+					G.GAME.ranks[k].l_chips = G.GAME.ranks[k].l_chips * (to_big(2) ^ (self:getEvalQty() or 1))
+					G.GAME.ranks[k].l_mult = G.GAME.ranks[k].l_mult * (to_big(2) ^ (self:getEvalQty() or 1))
 				end
 			end
 		elseif cen.key == 'c_jen_soul_omega' then
