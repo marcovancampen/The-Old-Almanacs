@@ -176,6 +176,66 @@ local function init_jen_safety_systems()
 	end
 end
 
+-- Register custom scoring calculations for arrow operators (deferred until colors are available)
+local function register_arrow_scoring_calculations()
+	if not SMODS or not SMODS.Scoring_Calculation then return false end
+	if not G or not G.C then return false end
+
+	-- Only register if not already registered
+	if SMODS.Scoring_Calculations and SMODS.Scoring_Calculations.arrow_2 then return true end
+
+	-- Register arrow_2 through arrow_5 with specific display text
+	SMODS.Scoring_Calculation({
+		key = 'arrow_2',
+		func = function(self, chips, mult, flames)
+			return to_big(chips):arrow(2, to_big(mult))
+		end,
+		text = '^^',
+		colour = G.C.DARK_EDITION or { 0.8, 0.45, 0.85, 1 }
+	})
+
+	SMODS.Scoring_Calculation({
+		key = 'arrow_3',
+		func = function(self, chips, mult, flames)
+			return to_big(chips):arrow(3, to_big(mult))
+		end,
+		text = '^^^',
+		colour = G.C.CRY_EXOTIC or { 1, 0.5, 0, 1 }
+	})
+
+	SMODS.Scoring_Calculation({
+		key = 'arrow_4',
+		func = function(self, chips, mult, flames)
+			return to_big(chips):arrow(4, to_big(mult))
+		end,
+		text = '^^^^',
+		colour = G.C.CRY_EMBER or { 1, 0.2, 0.2, 1 }
+	})
+
+	SMODS.Scoring_Calculation({
+		key = 'arrow_5',
+		func = function(self, chips, mult, flames)
+			return to_big(chips):arrow(5, to_big(mult))
+		end,
+		text = '^^^^^',
+		colour = G.C.CRY_ASCENDANT or { 0.5, 1, 1, 1 }
+	})
+	
+	-- Register arrow_6 through arrow_100 with {N} display format
+	for i = 6, 100 do
+		SMODS.Scoring_Calculation({
+			key = 'arrow_' .. i,
+			func = function(self, chips, mult, flames)
+				return to_big(chips):arrow(i, to_big(mult))
+			end,
+			text = '{' .. i .. '}',
+			colour = G.C.jen_RGB or { 1, 1, 1, 1 }
+		})
+	end
+	
+	return true
+end
+
 -- Hook into game initialization
 local original_game_start_run = Game.start_run
 function Game:start_run(args)
@@ -204,31 +264,19 @@ function Game:start_run(args)
 
 	-- Initialize scoring calculation based on current operator level
 	-- This needs to happen after the game is initialized
-	Q(function()
-		if get_final_operator and SMODS and SMODS.set_scoring_calculation then
-			local op = get_final_operator()
-			if op == 0 then
-				SMODS.set_scoring_calculation('add')
-			elseif op == 1 then
-				SMODS.set_scoring_calculation('multiply')
-			elseif op == 2 then
-				SMODS.set_scoring_calculation('exponent')
-			elseif op == 3 then
-				register_arrow_scoring_calculations()
-				SMODS.set_scoring_calculation('arrow_2')
-			elseif op == 4 then
-				register_arrow_scoring_calculations()
-				SMODS.set_scoring_calculation('arrow_3')
-			elseif op == 5 then
-				register_arrow_scoring_calculations()
-				SMODS.set_scoring_calculation('arrow_4')
-			elseif op == 6 then
-				register_arrow_scoring_calculations()
-				SMODS.set_scoring_calculation('arrow_5')
-			end
+	if get_final_operator and SMODS and SMODS.set_scoring_calculation then
+		local op = get_final_operator()
+		if op == 0 then
+			SMODS.set_scoring_calculation('add')
+		elseif op == 1 then
+			SMODS.set_scoring_calculation('multiply')
+		elseif op == 2 then
+			SMODS.set_scoring_calculation('exponent')
+		elseif op >= 3 then
+			register_arrow_scoring_calculations()
+			SMODS.set_scoring_calculation('arrow_' .. (op - 1))
 		end
-		return true
-	end)
+	end
 
 	return result
 end
@@ -1737,53 +1785,7 @@ local function play_sound_q(sound, per, vol)
 		end
 	}))
 end
--- Register custom scoring calculations for arrow operators (deferred until colors are available)
-local function register_arrow_scoring_calculations()
-	if not SMODS or not SMODS.Scoring_Calculation then return end
-	if not G or not G.C then return end
 
-	-- Only register if not already registered
-	if SMODS.Scoring_Calculations and SMODS.Scoring_Calculations.arrow_2 then return end
-
-	SMODS.Scoring_Calculation({
-		key = 'arrow_2',
-		func = function(self, chips, mult, flames)
-			return to_big(chips):arrow(2, to_big(mult))
-		end,
-		text = '^^',
-		colour = G.C.DARK_EDITION or { 0.8, 0.45, 0.85, 1 }
-	})
-
-	SMODS.Scoring_Calculation({
-		key = 'arrow_3',
-		func = function(self, chips, mult, flames)
-			return to_big(chips):arrow(3, to_big(mult))
-		end,
-		text = '^^^',
-		colour = G.C.CRY_EXOTIC or { 1, 0.5, 0, 1 }
-	})
-
-	SMODS.Scoring_Calculation({
-		key = 'arrow_4',
-		func = function(self, chips, mult, flames)
-			return to_big(chips):arrow(4, to_big(mult))
-		end,
-		text = '^^^^',
-		colour = G.C.CRY_EMBER or { 1, 0.2, 0.2, 1 }
-	})
-
-	SMODS.Scoring_Calculation({
-		key = 'arrow_5',
-		func = function(self, chips, mult, flames)
-			return to_big(chips):arrow(5, to_big(mult))
-		end,
-		text = '^^^^^',
-		colour = G.C.CRY_ASCENDANT or { 0.5, 1, 1, 1 }
-	})
-end
-
--- Try to register immediately
-register_arrow_scoring_calculations()
 
 local final_operations = {
 	[-2] = { '/', 'IMPORTANT' },
@@ -1897,6 +1899,8 @@ function set_final_operator(value)
 		-- Level 2 is ^, use built-in exponent
 		SMODS.set_scoring_calculation('exponent')
 	elseif op >= 3 then
+		-- Ensure arrow calculations are registered
+		register_arrow_scoring_calculations()
 		-- Level 3+ uses arrow_2, arrow_3, etc.
 		SMODS.set_scoring_calculation('arrow_' .. (op - 1))
 	end
@@ -1914,6 +1918,8 @@ function set_final_operator_offset(value)
 		-- Level 2 is ^, use built-in exponent
 		SMODS.set_scoring_calculation('exponent')
 	elseif op >= 3 then
+		-- Ensure arrow calculations are registered
+		register_arrow_scoring_calculations()
 		-- Level 3+ uses arrow_2, arrow_3, etc.
 		SMODS.set_scoring_calculation('arrow_' .. (op - 1))
 	end
@@ -3196,14 +3202,17 @@ function Game:update(dt)
 			end
 		end
 
-		local r, g, b = hsv(self.C.jen_RGB_HUE / 360, .5, 1)
+		-- Ensure jen_RGB_HUE is initialized in self.C before using it
+		if self.C.jen_RGB_HUE then
+			local r, g, b = hsv(self.C.jen_RGB_HUE / 360, .5, 1)
 
-		self.C.jen_RGB[1] = r
-		self.C.jen_RGB[3] = g
-		self.C.jen_RGB[2] = b
+			self.C.jen_RGB[1] = r
+			self.C.jen_RGB[3] = g
+			self.C.jen_RGB[2] = b
 
-		self.C.jen_RGB_HUE = (self.C.jen_RGB_HUE + 0.5) % 360
-		G.ARGS.LOC_COLOURS.jen_RGB = self.C.jen_RGB
+			self.C.jen_RGB_HUE = (self.C.jen_RGB_HUE + 0.5) % 360
+			G.ARGS.LOC_COLOURS.jen_RGB = self.C.jen_RGB
+		end
 	end
 	if G.GAME then
 		-- Fix for modulate_sound crash: Convert big numbers to regular numbers
@@ -24155,6 +24164,31 @@ G.FUNCS.reroll_boss = function(e)
 	end
 end
 
+local function update_scoring_mode()
+	if get_final_operator and SMODS and SMODS.set_scoring_calculation then
+		local op = get_final_operator()
+		if op == 0 then
+			SMODS.set_scoring_calculation('add')
+		elseif op == 1 then
+			SMODS.set_scoring_calculation('multiply')
+		elseif op == 2 then
+			SMODS.set_scoring_calculation('exponent')
+		elseif op == 3 then
+			register_arrow_scoring_calculations()
+			SMODS.set_scoring_calculation('arrow_2')
+		elseif op == 4 then
+			register_arrow_scoring_calculations()
+			SMODS.set_scoring_calculation('arrow_3')
+		elseif op == 5 then
+			register_arrow_scoring_calculations()
+			SMODS.set_scoring_calculation('arrow_4')
+		elseif op == 6 then
+			register_arrow_scoring_calculations()
+			SMODS.set_scoring_calculation('arrow_5')
+		end
+	end
+end
+
 SMODS.Blind {
 	loc_txt = {
 		name = 'The Descending',
@@ -24172,16 +24206,19 @@ SMODS.Blind {
 	defeat = function(self)
 		if not G.GAME.blind.disabled and get_final_operator_offset() < 0 then
 			offset_final_operator(1)
+			update_scoring_mode()
 		end
 	end,
 	set_blind = function(self, reset, silent)
 		if not reset then
 			offset_final_operator(-1)
+			update_scoring_mode()
 		end
 	end,
 	disable = function(self)
 		if get_final_operator_offset() < 0 then
 			offset_final_operator(1)
+			update_scoring_mode()
 		end
 	end
 }
