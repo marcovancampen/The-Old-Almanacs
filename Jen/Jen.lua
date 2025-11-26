@@ -5,7 +5,7 @@
 -- Ensure global Jen table exists even if TOML init patch is absent
 Jen = Jen or {}
 
-maxArrow = 2.5e4
+maxArrow = 100
 
 --Incantation.DelayStacking = Incantation.DelayStacking + 5
 
@@ -67,6 +67,37 @@ local redeemprev = '{s:0.75}Also redeems {C:attention,s:0.75}previous tier for f
 --INITIAL STUFF
 
 local CFG = SMODS.current_mod.config
+
+SMODS.current_mod.config_tab = function()
+	return {
+		n = G.UIT.ROOT,
+		config = {
+			{
+				n = G.UIT.C,
+				config = { align = "cm", padding = 0.05 },
+				nodes = {
+					{
+						n = G.UIT.R,
+						config = { align = "cm", padding = 0.05 },
+						nodes = {
+							create_toggle({
+								label = "Skip Straddle Animation",
+								ref_table = SMODS.current_mod.config,
+								ref_value = "straddle_skip_animation",
+								callback = function(val)
+									SMODS.current_mod.config.straddle_skip_animation = val
+									if Jen and Jen.config and Jen.config.straddle then
+										Jen.config.straddle.skip_animation = val
+									end
+								end
+							})
+						}
+					}
+				}
+			}
+		}
+	}
+end
 
 -- Initialize safety systems from ported lovely.toml patches
 local function init_jen_safety_systems()
@@ -220,7 +251,7 @@ local function register_arrow_scoring_calculations()
 		text = '^^^^^',
 		colour = G.C.CRY_ASCENDANT or { 0.5, 1, 1, 1 }
 	})
-	
+
 	-- Register arrow_6 through arrow_100 with {N} display format
 	for i = 6, 100 do
 		SMODS.Scoring_Calculation({
@@ -232,7 +263,7 @@ local function register_arrow_scoring_calculations()
 			colour = G.C.jen_RGB or { 1, 1, 1, 1 }
 		})
 	end
-	
+
 	return true
 end
 
@@ -745,7 +776,7 @@ Jen = {
 		straddle = {
 			enabled = CFG.straddle,
 			acceleration = true,
-			skip_animation = false,
+			skip_animation = CFG.straddle_skip_animation,
 			backwards_mod = 2,
 			progress_min = 3,
 			progress_max = 7,
@@ -828,31 +859,31 @@ Jen = {
 	}
 }
 
-local function faceart(artist)
+function faceart(artist)
 	return (Jen.config.texture_pack == 'default' and Jen.config.show_credits) and
 		('{C:dark_edition,s:0.7,E:2}Floating sprite by : ' .. artist) or ''
 end
 
-local function origin(world)
+function origin(world)
 	return (Jen.config.texture_pack == 'default' and Jen.config.show_credits) and
 		('{C:cry_exotic,s:0.7,E:2}Origin : ' .. world)
 end
 
-local function au(world)
+function au(world)
 	return (Jen.config.texture_pack == 'default' and Jen.config.show_credits) and
 		('{C:cry_blossom,s:0.7,E:2}A.U. : ' .. world)
 end
 
-local function spriter(artist)
+function spriter(artist)
 	return (Jen.config.texture_pack == 'default' and Jen.config.show_credits) and
 		('{C:dark_edition,s:0.7,E:2}Sprite by : ' .. artist)
 end
 
-local function caption(cap)
+function caption(cap)
 	return Jen.config.show_captions and ('{C:caption,s:0.7,E:1}' .. cap) or ''
 end
 
-local function lore(txt)
+function lore(txt)
 	return Jen.config.show_lore and ('{C:lore,s:0.7,E:2}' .. txt) or ''
 end
 
@@ -1889,7 +1920,7 @@ function get_final_operator(absolute)
 end
 
 function set_final_operator(value)
-	G.GAME.finaloperator = math.min(math.max(value, 0), maxArrow + 1)
+	G.GAME.finaloperator = math.min(math.max(value, 0), 101)
 	local op = get_final_operator()
 	if op == 0 then
 		SMODS.set_scoring_calculation('add')
@@ -1902,13 +1933,15 @@ function set_final_operator(value)
 		-- Ensure arrow calculations are registered
 		register_arrow_scoring_calculations()
 		-- Level 3+ uses arrow_2, arrow_3, etc.
-		SMODS.set_scoring_calculation('arrow_' .. (op - 1))
+		local arrow_lvl = op - 1
+		if arrow_lvl > 100 then arrow_lvl = 100 end
+		SMODS.set_scoring_calculation('arrow_' .. arrow_lvl)
 	end
 	update_operator_display()
 end
 
 function set_final_operator_offset(value)
-	G.GAME.finaloperator_offset = math.min(math.max(value, -1), maxArrow)
+	G.GAME.finaloperator_offset = math.min(math.max(value, -1), 101)
 	local op = get_final_operator()
 	if op == 0 then
 		SMODS.set_scoring_calculation('add')
@@ -1921,7 +1954,9 @@ function set_final_operator_offset(value)
 		-- Ensure arrow calculations are registered
 		register_arrow_scoring_calculations()
 		-- Level 3+ uses arrow_2, arrow_3, etc.
-		SMODS.set_scoring_calculation('arrow_' .. (op - 1))
+		local arrow_lvl = op - 1
+		if arrow_lvl > 100 then arrow_lvl = 100 end
+		SMODS.set_scoring_calculation('arrow_' .. arrow_lvl)
 	end
 	update_operator_display()
 end
@@ -2238,21 +2273,23 @@ function progress_straddle(add)
 	local orig_straddle = G.GAME.straddle
 	local to_next = math.min(MAX, MIN + math.floor(G.GAME.straddle / Jen.config.straddle.progress_increment))
 	local progressbar = {}
-	for i = 1, MAX do
-		progressbar[i] = jl.rawcard(i > to_next and 'm_stone' or G.GAME.straddle >= 100 and 'm_gold' or 'c_base',
-			1 / ((1 + (MAX / 10)) ^ .5), (2 / MAX) * i)
-		progressbar[i].states.drag.can = false
-		progressbar[i].no_ui = true
-		if i <= G.GAME.straddle_progress then
-			progressbar[i]:set_edition({ negative = true }, true, true)
+	if not Jen.config.straddle.skip_animation then
+		for i = 1, MAX do
+			progressbar[i] = jl.rawcard(i > to_next and 'm_stone' or G.GAME.straddle >= 100 and 'm_gold' or 'c_base',
+				1 / ((1 + (MAX / 10)) ^ .5), (2 / MAX) * i)
+			progressbar[i].states.drag.can = false
+			progressbar[i].no_ui = true
+			if i <= G.GAME.straddle_progress then
+				progressbar[i]:set_edition({ negative = true }, true, true)
+			end
 		end
+		if (progressbar or {})[1] then progressbar[1]:add_dynatext('Straddle ' .. number_format(G.GAME.straddle)) end
+		if (progressbar or {})[to_next] then
+			progressbar[to_next]:add_dynatext(nil,
+				'Straddle ' .. number_format(G.GAME.straddle + 1))
+		end
+		jl.rd(0.5)
 	end
-	if (progressbar or {})[1] then progressbar[1]:add_dynatext('Straddle ' .. number_format(G.GAME.straddle)) end
-	if (progressbar or {})[to_next] then
-		progressbar[to_next]:add_dynatext(nil,
-			'Straddle ' .. number_format(G.GAME.straddle + 1))
-	end
-	jl.rd(0.5)
 	while add > 0 and (spd < 8 or to_next < MAX) and not Jen.config.straddle.skip_animation do
 		add = add - 1
 		G.GAME.straddle_progress = G.GAME.straddle_progress + 1
@@ -2335,41 +2372,50 @@ function progress_straddle(add)
 		G.GAME.straddle_progress = G.GAME.straddle_progress - (to_next * mass_add)
 		G.GAME.straddle = G.GAME.straddle + mass_add
 		local nxt = math.min(MAX, MIN + math.floor(G.GAME.straddle / Jen.config.straddle.progress_increment))
-		Q(function()
-			for i = 1, MAX do
-				if (progressbar or {})[i] then
-					progressbar[i]:remove_dynatext()
-					if i == 1 or i == to_next then
-						progressbar[i]:add_dynatext(i == 1 and ('Straddle ' .. number_format(G.GAME.straddle)),
-							i == to_next and ('Straddle ' .. number_format(G.GAME.straddle + 1)))
-					end
-					progressbar[i]:set_ability(G.P_CENTERS
-						[i > nxt and 'm_stone' or G.GAME.straddle >= 100 and 'm_gold' or 'c_base'])
-					if i <= G.GAME.straddle_progress then
-						progressbar[i]:set_edition({ negative = true }, true, true)
-					else
-						progressbar[i]:set_edition(nil, true, true)
+		if not Jen.config.straddle.skip_animation then
+			Q(function()
+				for i = 1, MAX do
+					if (progressbar or {})[i] then
+						progressbar[i]:remove_dynatext()
+						if i == 1 or i == to_next then
+							progressbar[i]:add_dynatext(i == 1 and ('Straddle ' .. number_format(G.GAME.straddle)),
+								i == to_next and ('Straddle ' .. number_format(G.GAME.straddle + 1)))
+						end
+						progressbar[i]:set_ability(G.P_CENTERS
+							[i > nxt and 'm_stone' or G.GAME.straddle >= 100 and 'm_gold' or 'c_base'])
+						if i <= G.GAME.straddle_progress then
+							progressbar[i]:set_edition({ negative = true }, true, true)
+						else
+							progressbar[i]:set_edition(nil, true, true)
+						end
 					end
 				end
+				return true
+			end)
+			if orig_straddle ~= G.GAME.straddle then
+				jl.a('Straddle ' .. number_format(G.GAME.straddle),
+					G.SETTINGS.GAMESPEED * 2, 1,
+					mix_colours(G.C.RED, G.C.UI.TEXT_LIGHT,
+						math.min(1 + (Jen.config.straddle.progress_increment / 10),
+							G.GAME.straddle / Jen.config.straddle.progress_increment) -
+						(Jen.config.straddle.progress_increment / 10)))
 			end
-			return true
-		end)
-		if orig_straddle ~= G.GAME.straddle then
-			jl.a('Straddle ' .. number_format(G.GAME.straddle),
-				G.SETTINGS.GAMESPEED * 2, 1,
-				mix_colours(G.C.RED, G.C.UI.TEXT_LIGHT,
-					math.min(1 + (Jen.config.straddle.progress_increment / 10),
-						G.GAME.straddle / Jen.config.straddle.progress_increment) -
-					(Jen.config.straddle.progress_increment / 10)))
+			Q(function()
+				play_sound('jen_straddle_increase')
+				play_sound('generic1')
+				return true
+			end)
+			ease_straddle_display()
+		else
+			G.GAME.straddle_disp = G.GAME.straddle
+			local straddle_UI = G.HUD:get_UIE_by_ID('straddle_UI_count')
+			if straddle_UI and straddle_UI.config and straddle_UI.config.object then
+				straddle_UI.config.object:update()
+			end
+			if G.HUD then G.HUD:recalculate() end
 		end
-		Q(function()
-			play_sound('jen_straddle_increase')
-			play_sound('generic1')
-			return true
-		end)
-		ease_straddle_display()
 	end
-	jl.rd(1)
+	if not Jen.config.straddle.skip_animation then jl.rd(1) end
 	if (progressbar or {})[1] then progressbar[1]:remove_dynatext() end
 	if (progressbar or {})[to_next] then progressbar[to_next]:remove_dynatext() end
 	Q(function()
@@ -3001,7 +3047,7 @@ local function multante(number)
 	end]]
 end
 
-local function hsv(h, s, v)
+function hsv(h, s, v)
 	if s <= 0 then return v, v, v end
 	h = h * 6
 	local c = v * s
@@ -10406,6 +10452,11 @@ SMODS.Consumable {
 	end
 }
 
+local omegaconsumables = {
+	'world', 'sun', 'star', 'moon',
+	'magician', 'empress', 'hierophant', 'lovers', 'chariot', 'justice', 'devil', 'tower'
+}
+
 SMODS.Consumable {
 	key = 'fool_omega',
 	set = 'jen_omegaconsumable',
@@ -10450,6 +10501,17 @@ SMODS.Consumable {
 }
 
 local omega_copyamount = 19
+local enhancetarots_info = {
+	{ b = 'magician',   o = 'The Magician',   c = 'Lucky', omega = 4 },
+	{ b = 'empress',    o = 'The Empress',    c = 'Mult',  omega = 5 },
+	{ b = 'hierophant', o = 'The Hierophant', c = 'Bonus', omega = 6 },
+	{ b = 'lovers',     o = 'The Lovers',     c = 'Wild',  omega = 7 },
+	{ b = 'chariot',    o = 'The Chariot',    c = 'Steel', omega = 8 },
+	{ b = 'justice',    o = 'Justice',        c = 'Glass', omega = 9 },
+	{ b = 'devil',      o = 'The Devil',      c = 'Gold',  omega = 10 },
+	{ b = 'tower',      o = 'The Tower',      c = 'Stone', omega = 11 }
+}
+
 for k, v in ipairs(enhancetarots_info) do
 	SMODS.Consumable {
 		key = v.b .. '_omega',
@@ -10727,6 +10789,13 @@ SMODS.Consumable {
 			return true
 		end)
 	end
+}
+
+local suittarots_info = {
+	{ b = 'world', s = 'Spades',   o = 0 },
+	{ b = 'sun',   s = 'Hearts',   o = 1 },
+	{ b = 'star',  s = 'Diamonds', o = 2 },
+	{ b = 'moon',  s = 'Clubs',    o = 3 }
 }
 
 for kk, vv in pairs(suittarots_info) do
@@ -14707,6 +14776,16 @@ SMODS.current_mod.config_tab = function()
 					}
 				}
 			},
+			create_toggle({
+				label = "Skip Straddle Animation",
+				ref_table = Jen.config,
+				ref_value = "straddle_skip_animation",
+				callback = function(val)
+					if Jen and Jen.config and Jen.config.straddle then
+						Jen.config.straddle.skip_animation = val
+					end
+				end
+			}),
 			almanac_toggle('Enable banned items', 'disable_bans', G.C.RED),
 			{
 				n = G.UIT.R,

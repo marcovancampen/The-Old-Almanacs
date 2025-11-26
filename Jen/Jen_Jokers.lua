@@ -2263,6 +2263,65 @@ local function kori_strength(power)
 	return { op = level, no = power + 3 }
 end
 
+local sevensins = {
+	guilduryn = {
+		text = {
+			'Sin of Pride',
+			'Seven Sins'
+		},
+		col = G.C.GOLD,
+		tcol = G.C.UI.TEXT_LIGHT
+	},
+	hydrangea = {
+		text = {
+			'Sin of Wrath',
+			'Seven Sins'
+		},
+		col = G.C.RED,
+		tcol = G.C.UI.TEXT_LIGHT
+	},
+	heisei = {
+		text = {
+			'Sin of Greed',
+			'Seven Sins'
+		},
+		col = G.C.MONEY,
+		tcol = G.C.UI.TEXT_LIGHT
+	},
+	soryu = {
+		text = {
+			'Sin of Lust',
+			'Seven Sins'
+		},
+		col = G.C.PURPLE,
+		tcol = G.C.UI.TEXT_LIGHT
+	},
+	shikigami = {
+		text = {
+			'Sin of Envy',
+			'Seven Sins'
+		},
+		col = G.C.GREEN,
+		tcol = G.C.UI.TEXT_LIGHT
+	},
+	leviathan = {
+		text = {
+			'Sin of Gluttony',
+			'Seven Sins'
+		},
+		col = G.C.ORANGE,
+		tcol = G.C.UI.TEXT_LIGHT
+	},
+	behemoth = {
+		text = {
+			'Sin of Sloth',
+			'Seven Sins'
+		},
+		col = G.C.BLUE,
+		tcol = G.C.UI.TEXT_LIGHT
+	}
+}
+
 
 
 SMODS.Joker {
