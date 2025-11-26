@@ -5214,31 +5214,88 @@ SMODS.Joker {
 	calculate = function(self, card, context)
 		if not context.blueprint and jl.njr(context) then
 			-- Pre-play behavior: discard cards to the left of the left hand when play is pressed
-			if context.press_play and card.ability.active then
-				local lh = jl.fc and jl.fc('j_jen_goob_lefthand', 'hand') or nil
-				if lh and G and G.hand and G.hand.cards then
-					local did_discard = false
+			if context.cardarea == G.jokers and context.before and not context.blueprint then
+				local lh = jl.fc('j_jen_goob_lefthand', 'hand')
+				local rh = jl.fc('j_jen_goob_righthand', 'hand')
+				if lh then
+					local to_discard = {}
+					local my_idx = nil
 					for i = 1, #G.hand.cards do
-						local tar = G.hand.cards[i]
-						if tar then
-							if tar == lh then
-								break
-							else
-								if not tar.highlighted and tar:xpos() < lh:xpos() then
-									if not did_discard then
-										did_discard = true
-										if goob_blurbs and goob_blurbs.discard then
-											card:speak(goob_blurbs.discard, G.C.RED)
-										end
-									end
-									draw_card(G.hand, G.discard, 100, 'down', false, tar)
-									Q(function()
-										play_sound('tarot1')
-										if lh.juice_up then lh:juice_up(0.5, 0.8) end
-										return true
-									end)
-								end
+						if G.hand.cards[i] == lh then
+							my_idx = i
+							break
+						end
+					end
+
+					if my_idx then
+						for i = 1, my_idx - 1 do
+							local tar = G.hand.cards[i]
+							if tar and tar ~= rh and not tar.highlighted then
+								table.insert(to_discard, tar)
 							end
+						end
+					end
+
+					if #to_discard > 0 then
+						if goob_blurbs and goob_blurbs.play then
+							card:speak(goob_blurbs.play, G.C.RED)
+						end
+						delay(0.5)
+						Q(function()
+							lh:juice_up(0.5, 0.8)
+							play_sound('tarot1')
+							return true
+						end)
+						for _, v in ipairs(to_discard) do
+							draw_card(G.hand, G.discard, 90, 'up', nil, v)
+						end
+					end
+				end
+			end
+			if context.pre_discard then
+				print("JEN_DEBUG: Goob pre_discard triggered")
+				local rh = jl.fc('j_jen_goob_righthand', 'hand')
+				print("JEN_DEBUG: Right hand found:", rh)
+				if rh then
+					local to_randomise = {}
+					local my_idx = nil
+					for i = 1, #G.hand.cards do
+						if G.hand.cards[i] == rh then
+							my_idx = i
+							break
+						end
+					end
+					print("JEN_DEBUG: Right hand index:", my_idx)
+
+					if my_idx then
+						for i = my_idx + 1, #G.hand.cards do
+							local tar = G.hand.cards[i]
+							if tar and not tar.highlighted then
+								table.insert(to_randomise, tar)
+							end
+						end
+					end
+					print("JEN_DEBUG: Cards to randomize count:", #to_randomise)
+
+					if #to_randomise > 0 then
+						if goob_blurbs and goob_blurbs.discard then
+							card:speak(goob_blurbs.discard, G.C.BLUE)
+						end
+						delay(0.5)
+						Q(function()
+							rh:juice_up(0.5, 0.8)
+							play_sound('tarot1')
+							return true
+						end)
+						for _, v in ipairs(to_randomise) do
+							print("JEN_DEBUG: Randomizing card", v.base.name)
+							local suit = pseudorandom_element({ 'Spades', 'Hearts', 'Clubs', 'Diamonds' },
+								pseudoseed('goob_suit'))
+							local rank = pseudorandom_element(
+								{ '2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', 'King', 'Ace' },
+								pseudoseed('goob_rank'))
+							assert(SMODS.change_base(v, suit, rank))
+							v:juice_up(0.3, 0.3)
 						end
 					end
 				end
@@ -5366,34 +5423,6 @@ SMODS.Joker {
 	eternal_compat = true,
 	perishable_compat = false,
 	atlas = 'jengoob_righthand',
-	calculate = function(self, card, context)
-		if context.pre_discard and card.area == G.hand then
-			local to_randomise = {}
-			for i = 1, #G.hand.cards do
-				local tar = G.hand.cards[i]
-				if tar then
-					if not tar.highlighted and tar ~= card and tar:xpos() > card:xpos() then
-						table.insert(to_randomise, tar)
-					end
-				end
-			end
-			if #to_randomise > 0 then
-				if goob_blurbs and goob_blurbs.discard then
-					local goob_main = jl.fc('j_jen_goob', 'jokers')
-					if goob_main then
-						goob_main:speak(goob_blurbs.discard, G.C.BLUE)
-					end
-				end
-				delay(0.5)
-				Q(function()
-					card:juice_up(0.5, 0.8)
-					play_sound('tarot1')
-					return true
-				end)
-				jl.randomise(to_randomise)
-			end
-		end
-	end
 }
 
 local rd_blurbs = {
