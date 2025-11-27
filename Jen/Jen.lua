@@ -4605,7 +4605,10 @@ SMODS.Edition {
 		name = "Watercoloured",
 		label = "Watercoloured",
 		text = {
-			"Retrigger this card {C:attention}#1#{} times",
+			'{C:inactive}==On Jokers==',
+			'Retrigger all scoring cards {C:attention}#1#{} times',
+			'{C:inactive}==On Playing Cards==',
+			'Retriggers {C:attention}#1#{} times',
 			'{C:dark_edition,s:0.7,E:2}Shader by : stupxd'
 		}
 	},
@@ -10845,6 +10848,8 @@ function createfulldeck()
 		card:set_base(v)
 		card:add_to_deck()
 		G.deck:emplace(card)
+		G.playing_card = (G.playing_card and G.playing_card + 1) or 1
+		table.insert(G.playing_cards, card)
 	end
 end
 
@@ -10896,10 +10901,16 @@ SMODS.Consumable {
 			return true
 		end)
 		jl.rd(3)
-		if G.GAME.round_resets.ante > 2 then ease_ante(math.floor(-G.GAME.round_resets.ante / 4 * 3), true, true, true) end
-		createfulldeck()
-		jl.a('Baaaa.', G.SETTINGS.GAMESPEED, 1, G.C.RED)
-		card.sell_cost = 0
+		Q(function()
+			if G.GAME.round_resets.ante > 2 then
+				ease_ante(math.floor(-G.GAME.round_resets.ante / 4 * 3), true, true,
+					true)
+			end
+			createfulldeck()
+			jl.a('Baaaa.', G.SETTINGS.GAMESPEED, 1, G.C.RED)
+			card.sell_cost = 0
+			return true
+		end)
 		Q(function()
 			local kosmos = create_card('Joker', G.jokers, nil, nil, nil, nil, 'j_jen_kosmos', 'thekingslayer')
 			kosmos.ability.eternal = true
