@@ -12748,7 +12748,7 @@ SMODS.current_mod.config_tab = function()
 				}
 			},
 			almanac_toggle('Straddle mechanics', 'straddle'),
-			almanac_toggle('Smoother background & score flames (Pc)', 'hq_shaders'),
+			almanac_toggle('Smoother background & score flames (PC ONLY)', 'hq_shaders'),
 			almanac_toggle('Curb reroll abuse (Tension + Relief)', 'punish_reroll_abuse'),
 			almanac_toggle('Wondrous Joker music (by mthd2023)', 'wondrous'),
 			almanac_toggle('Extraordinary+ Joker music (by mthd2023)', 'extraordinary'),
