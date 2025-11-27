@@ -85,9 +85,12 @@ local function init_jen_safety_systems()
 		_G.lvcol = jl.lvcol
 	end
 
-	-- Initialize hand level color system when game loads
+	-- Initialize hand level color sys loads
 	if G and G.C and G.C.HAND_LEVELS then
-		jl.init_hand_level_colors()
+		if jl and jl.init_hand_level_colors
+		then
+			jl.init_hand_level_colors()
+		end
 	end
 
 	-- Initialize Gateway destruction flag for "The Saint" protection
