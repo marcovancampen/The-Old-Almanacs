@@ -1,7 +1,7 @@
 return {
 	straddle = true,
 	punish_reroll_abuse = true,
-	hq_shaders = true,
+	hq_shaders = false,
 	disable_bans = false,
 	wondrous = true,
 	extraordinary = true,

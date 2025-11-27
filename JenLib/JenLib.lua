@@ -1524,6 +1524,10 @@ function jl.setup_pointer_blacklist()
 	-- Blacklist Rai
 	Cryptid.pointerblistify("j_jen_rai")
 	print("[JEN DEBUG] Blacklisted Rai from pointer")
+
+	-- Blacklist Ability cards
+	Cryptid.pointerblistifytype("set", "jen_ability")
+	print("[JEN DEBUG] Blacklisted jen_ability set from pointer")
 end
 
 -- Setup pointer aliases for easy creation of Jen cards via POINTER://
