@@ -2,6 +2,14 @@
 -- Re-brought to you by some guy who restored this modpack from the ashes.
 
 
+-- Initialize hand level color sys loads
+
+-- for mobile version
+-- if G and G.C and G.C.HAND_L
+-- if jl and jl.init_hand_level_colors then jl.init_hand_level_colors() end
+-- end
+
+
 -- Ensure global Jen table exists even if TOML init patch is absent
 Jen = Jen or {}
 
@@ -68,36 +76,7 @@ local redeemprev = '{s:0.75}Also redeems {C:attention,s:0.75}previous tier for f
 
 local CFG = SMODS.current_mod.config
 
-SMODS.current_mod.config_tab = function()
-	return {
-		n = G.UIT.ROOT,
-		config = {
-			{
-				n = G.UIT.C,
-				config = { align = "cm", padding = 0.05 },
-				nodes = {
-					{
-						n = G.UIT.R,
-						config = { align = "cm", padding = 0.05 },
-						nodes = {
-							create_toggle({
-								label = "Skip Straddle Animation",
-								ref_table = SMODS.current_mod.config,
-								ref_value = "straddle_skip_animation",
-								callback = function(val)
-									SMODS.current_mod.config.straddle_skip_animation = val
-									if Jen and Jen.config and Jen.config.straddle then
-										Jen.config.straddle.skip_animation = val
-									end
-								end
-							})
-						}
-					}
-				}
-			}
-		}
-	}
-end
+
 
 -- Initialize safety systems from ported lovely.toml patches
 local function init_jen_safety_systems()
@@ -14778,7 +14757,7 @@ SMODS.current_mod.config_tab = function()
 			},
 			create_toggle({
 				label = "Skip Straddle Animation",
-				ref_table = Jen.config,
+				ref_table = CFG,
 				ref_value = "straddle_skip_animation",
 				callback = function(val)
 					if Jen and Jen.config and Jen.config.straddle then
