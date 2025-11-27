@@ -10839,6 +10839,15 @@ local function obfuscatedtext(length)
 	return str
 end
 
+function createfulldeck()
+	for k, v in pairs(G.P_CARDS) do
+		local card = create_card('Base', G.deck, nil, nil, nil, nil, nil, 'jen_soul_omega')
+		card:set_base(v)
+		card:add_to_deck()
+		G.deck:emplace(card)
+	end
+end
+
 SMODS.Consumable {
 	key = 'soul_omega',
 	set = 'jen_omegaconsumable',

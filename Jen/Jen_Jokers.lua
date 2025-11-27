@@ -2996,7 +2996,7 @@ function Card:use_consumeable(area, copier)
 				end
 			end
 		elseif cen.key == 'c_jen_soul_omega' then
-			self:setQty(1)
+			if self.setQty then self:setQty(1) end
 		end
 	end
 	cuc(self, area, copier)
