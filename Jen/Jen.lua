@@ -419,7 +419,9 @@ local original_update_hand_text = update_hand_text
 function update_hand_text(config, vals)
 	-- Ensure hand level colors are properly initialized for big numbers
 	if G and G.C and G.C.HAND_LEVELS and not G.C.HAND_LEVELS_JEN_POPULATED then
-		jl.init_hand_level_colors()
+		if jl and jl.init_hand_level_colors then
+			jl.init_hand_level_colors()
+		end
 	end
 	return original_update_hand_text(config, vals)
 end
@@ -1854,6 +1856,14 @@ function get_chipmult_sum(chips, mult)
 end
 
 function update_operator_display()
+	-- Android-safe: if the UI doesn't exist yet, retry next frame
+	if not G.hand_text_area or not G.hand_text_area.op then
+		Q(function()
+			update_operator_display()
+			return true
+		end)
+		return
+	end
 	local op = get_final_operator()
 	local txt = ''
 	local col = G.C.WHITE
@@ -1862,7 +1872,8 @@ function update_operator_display()
 		col = G.C.jen_RGB
 	else
 		txt = final_operations[op][1]
-		col = type(final_operations[op][2]) == 'table' and final_operations[op][2] or G.C[final_operations[op][2]]
+		local color_def = final_operations[op][2]
+		col = type(color_def) == 'table' and color_def or G.C[color_def]
 	end
 	Q(function()
 		play_sound('button', 1.1, 0.65)
