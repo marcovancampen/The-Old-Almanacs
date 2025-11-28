@@ -1134,6 +1134,27 @@ function jl.voucher(key)
 		delay = 0,
 		func = function()
 			card:start_dissolve()
+			-- Remove from area immediately to prevent interference from other game systems
+			-- (e.g., Clearance Sale calling set_cost() on all cards in G.I.CARD)
+			if card.area and card.area == G.redeemed_vouchers_during_hand then
+				card.area:remove_card(card)
+			end
+			return true
+		end
+	}))
+	-- Clean up the card object and area after dissolve animation completes
+	G.E_MANAGER:add_event(Event({
+		delay = 0.7, -- Wait for dissolve animation to complete
+		func = function()
+			-- Fully remove the card object
+			if card then
+				card:remove()
+			end
+			-- Clean up the special area if it's empty
+			if G.redeemed_vouchers_during_hand and #G.redeemed_vouchers_during_hand.cards == 0 then
+				G.redeemed_vouchers_during_hand:remove()
+				G.redeemed_vouchers_during_hand = nil
+			end
 			return true
 		end
 	}))

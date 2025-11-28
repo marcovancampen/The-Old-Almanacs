@@ -1853,6 +1853,8 @@ local chipmult_sum_cache = {}
 function get_chipmult_sum(chips, mult)
 	chips = chips or 0
 	mult = mult or 0
+	if type(chips) == 'number' and chips ~= chips then chips = 0 end -- NaN check
+	if type(mult) == 'number' and mult ~= mult then mult = 0 end  -- NaN check
 	if #chipmult_sum_cache > sumcache_limit then
 		for i = 1, sumcache_limit do
 			table.remove(chipmult_sum_cache)
@@ -2889,6 +2891,7 @@ local function change_blind_size(newsize, instant, silent)
 		end)
 	end
 end
+Jen.change_blind_size = change_blind_size
 
 function card_status_text(card, text, xoffset, yoffset, colour, size, DELAY, juice, jiggle, align, sound, volume, pitch,
 						  trig, F)
@@ -3058,7 +3061,7 @@ function ease_winante(mod)
 	end, nil, nil, 'immediate')
 end
 
-local function multante(number)
+function multante(number)
 	--local targetante = math.abs(G.GAME.round_resets.ante * (2 ^ (number or 1)))
 	if G.GAME.round_resets.ante < 1 then
 		ease_ante(math.abs(G.GAME.round_resets.ante) + 1)
@@ -3515,7 +3518,7 @@ local secret = {
 
 --MISCELLANEOUS
 
-local function abletouseabilities()
+function abletouseabilities()
 	return jl.canuse() and not jl.booster()
 end
 
@@ -5909,6 +5912,7 @@ local handinacard = {
 	[11] = { 'Flush House', 'Ascendant' },
 	[12] = { 'Flush Five', 'Identity' }
 }
+Jen.handinacard = handinacard
 
 for k, v in ipairs(handinacard) do
 	SMODS.Enhancement {

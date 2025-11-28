@@ -63,23 +63,17 @@ match_indent = true
 [[patches]]
 [patches.regex]
 target = "functions/state_events.lua"
-pattern = '''hand_chips\*mult'''
+pattern = '''(?:to_big\s*\(\s*)?hand_chips(?:\s*\))?\s*\*\s*(?:to_big\s*\(\s*)?mult(?:\s*\))?'''
 position = "at"
 payload = "get_chipmult_sum(hand_chips, mult)"
 match_indent = true
+
+
 
 [[patches]]
 [patches.regex]
 target = "functions/state_events.lua"
-pattern = '''to_big\(hand_chips\)\*mult'''
-position = "at"
-payload = "get_chipmult_sum(hand_chips, mult)"
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "functions/state_events.lua"
-pattern = "if to_big(hand_chips)*mult > to_big(0) then"
+pattern = '''if\s+(?:to_big\s*\(\s*)?hand_chips(?:\s*\))?\s*\*\s*(?:to_big\s*\(\s*)?mult(?:\s*\))?\s*>\s*to_big\s*\(\s*0\s*\)\s+then'''
 position = "at"
 payload = "if get_chipmult_sum(hand_chips, mult) > to_big(0) then"
 match_indent = true

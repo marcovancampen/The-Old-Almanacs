@@ -2403,7 +2403,7 @@ SMODS.Joker {
 					card_status_text(card, '-7% Blind Size', nil, 0.05 * card.T.h, G.C.FILTER, 0.75, 1, 0.6, nil, 'bm',
 						'generic1')
 				end
-				change_blind_size(to_big(G.GAME.blind.chips) / to_big(1.07), (G.SETTINGS.FASTFORWARD or 0) > 1,
+				Jen.change_blind_size(to_big(G.GAME.blind.chips) / to_big(1.07), (G.SETTINGS.FASTFORWARD or 0) > 1,
 					(G.SETTINGS.FASTFORWARD or 0) > 1)
 				return nil, true
 			end
@@ -2631,7 +2631,7 @@ SMODS.Joker {
 							card:juice_up(0.8, 0.2)
 							G.GAME.blind:juice_up(3, 3)
 							play_sound('slice1', 0.96 + math.random() * 0.08)
-							change_blind_size(1)
+							Jen.change_blind_size(1)
 							return true
 						end)
 						card.ability.extra.axesharpness = math.max(0, card.ability.extra.axesharpness - 1)
@@ -10299,7 +10299,7 @@ SMODS.Consumable {
 					function()
 						G.hand:remove_from_highlighted(CARD); CARD:flip(); CARD:set_ability(
 							G.P_CENTERS
-							['m_jen_' .. string.lower(pseudorandom_element(handinacard, pseudoseed("sleeve_random"))[2])],
+							['m_jen_' .. string.lower(pseudorandom_element(Jen.handinacard, pseudoseed("sleeve_random"))[2])],
 							true,
 							nil); play_sound('jen_pop'); CARD:juice_up(0.3, 0.3); return true
 					end, 0.15, nil, 'after')
