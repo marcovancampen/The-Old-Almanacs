@@ -13,6 +13,38 @@
 -- Ensure global Jen table exists even if TOML init patch is absent
 Jen = Jen or {}
 
+-- Fallback for Incantation's getEvalQty if not present
+-- Fallback for Incantation's functions if not present
+if Card then
+	if not Card.getEvalQty then
+		function Card:getEvalQty()
+			return (self.ability and self.ability.qty) or 1
+		end
+	end
+	if not Card.getQty then
+		function Card:getQty()
+			return (self.ability and self.ability.qty) or 1
+		end
+	end
+	if not Card.getInfinite then
+		function Card:getInfinite()
+			return self.ability and self.ability.infinite
+		end
+	end
+	if not Card.subQty then
+		function Card:subQty(quantity)
+			if self.ability and self.ability.qty then
+				self.ability.qty = self.ability.qty - quantity
+				if self.ability.qty <= 0 then
+					self:start_dissolve()
+				end
+			else
+				self:start_dissolve()
+			end
+		end
+	end
+end
+
 maxArrow = 100
 
 --Incantation.DelayStacking = Incantation.DelayStacking + 5
@@ -7151,7 +7183,7 @@ SMODS.Consumable {
 		else
 			if not target:getInfinite() then
 				Q(function()
-					if target:getQty() > 1 then target:subQty(1) else target:start_dissolve() end
+					if (target:getQty() or 1) > 1 then target:subQty(1) else target:start_dissolve() end
 					return true
 				end)
 			end
@@ -7191,7 +7223,7 @@ SMODS.Consumable {
 		else
 			if not target:getInfinite() then
 				Q(function()
-					if target:getQty() > 1 then target:subQty(1) else target:start_dissolve() end
+					if (target:getQty() or 1) > 1 then target:subQty(1) else target:start_dissolve() end
 					return true
 				end)
 			end
