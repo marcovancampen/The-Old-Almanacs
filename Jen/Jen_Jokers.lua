@@ -4364,7 +4364,7 @@ SMODS.Joker {
 						G.E_MANAGER:add_event(Event({
 							trigger = 'after',
 							func = function()
-								if DELAY <= 0 then
+								if rolls > 0 and DELAY <= 0 then
 									if jl.chance('hunter_rot', CHANCE) then
 										card:flip()
 										card:juice_up(2, 0.8)
@@ -4803,42 +4803,7 @@ SMODS.Consumable {
 	end
 }
 
-SMODS.Joker {
-	key = 'rot',
-	loc_txt = {
-		name = 'The Rot',
-		text = {
-			'Clogs up your Joker slots',
-			'{C:attention}Duplicates itself{} at the end of every {C:attention}Ante',
-			' ',
-			'{C:inactive,s:1.25,E:1}*Better get rid of it before it starts killing your framerate...*',
-			faceart('jenwalter666'),
-			origin('Rain World')
-		}
-	},
-	pos = { x = 0, y = 0 },
-	soul_pos = { x = 1, y = 0 },
-	cost = 1,
-	rarity = 'jen_junk',
-	no_mysterious = true,
-	no_doe = true,
-	unlocked = true,
-	discovered = true,
-	blueprint_compat = false,
-	eternal_compat = true,
-	perishable_compat = false,
-	debuff_immune = true,
-	wee_incompatible = true,
-	edition_immune = 'negative',
-	atlas = 'jenrot',
-	calculate = function(self, card, context)
-		if not context.individual and not context.repetition and not card.debuff and context.end_of_round and not context.blueprint and G.GAME.blind.boss and not (G.GAME.blind.config and G.GAME.blind.config.bonus) then
-			local rot = copy_card(card)
-			rot:add_to_deck()
-			G.jokers:emplace(rot)
-		end
-	end
-}
+
 
 local crimbo_quotes = {
 	normal = {
@@ -10338,6 +10303,51 @@ SMODS.Consumable {
 							true,
 							nil); play_sound('jen_pop'); CARD:juice_up(0.3, 0.3); return true
 					end, 0.15, nil, 'after')
+			end
+		end
+	end
+}
+
+SMODS.Atlas {
+	key = 'jenrot',
+	path = 'default/j_jen_rot.png',
+	px = 71,
+	py = 95
+}
+
+SMODS.Joker {
+	key = 'rot',
+	loc_txt = {
+		name = 'The Rot',
+		text = {
+			'{C:inactive}Consumed by the rot...{}',
+			'Duplicates itself at',
+			'end of round'
+		}
+	},
+	atlas = 'jenrot',
+	rarity = 'jen_junk',
+	cost = 0,
+	unlocked = true,
+	discovered = true,
+	pos = { x = 0, y = 0 },
+	calculate = function(self, card, context)
+		if context.end_of_round and not context.repetition and not context.blueprint and not context.individual then
+			if #G.jokers.cards + G.GAME.joker_buffer < G.jokers.config.card_limit then
+				G.GAME.joker_buffer = G.GAME.joker_buffer + 1
+				G.E_MANAGER:add_event(Event({
+					func = function()
+						local new_card = create_card('Joker', G.jokers, nil, nil, nil, nil, 'j_jen_rot', 'rot')
+						new_card:add_to_deck()
+						G.jokers:emplace(new_card)
+						G.GAME.joker_buffer = 0
+						return true
+					end
+				}))
+				return {
+					message = "Rotten!",
+					colour = G.C.RED
+				}
 			end
 		end
 	end
