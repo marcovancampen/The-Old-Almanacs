@@ -2,7 +2,10 @@
     "id": "jen",
     "name": "Almanac (0.0.8)",
     "author": [
-        "jenwalter666"
+        "jenwalter666",
+        "Marko",
+        "TCM Murray",
+        "GhostGotHaunted"
     ],
     "description": "An extension of Cryptid which destroys what little balance there is left. Not necessarily in your favour, however.",
     "prefix": "jen",
@@ -19,5 +22,5 @@
     "conflicts": [
         "BetmmaVouchers"
     ],
-    "version": "0.0.8"
+    "version": "1.0.0"
 }

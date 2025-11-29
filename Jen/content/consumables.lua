@@ -2310,6 +2310,21 @@ SMODS.Consumable {
 	end
 }
 
+local handinacard = {
+	[1] = { 'High Card', 'Lonely' },
+	[2] = { 'Pair', 'Twin' },
+	[3] = { 'Two Pair', 'Siamese' },
+	[4] = { 'Three of a Kind', 'Triplet' },
+	[5] = { 'Straight', 'Sequential' },
+	[6] = { 'Flush', 'Symbolic' },
+	[7] = { 'Full House', 'Descendant' },
+	[8] = { 'Four of a Kind', 'Quadruplet' },
+	[9] = { 'Straight Flush', 'Tsunami' },
+	[10] = { 'Five of a Kind', 'Quintuplet' },
+	[11] = { 'Flush House', 'Ascendant' },
+	[12] = { 'Flush Five', 'Identity' }
+}
+
 SMODS.Consumable {
 	key = 'sleeve',
 	loc_txt = {
@@ -5197,9 +5212,9 @@ for a, b in ipairs(uno_data.values) do
 				local rank_config = Jen.config.rank_leveling[tostring(b)] or { chips = 0, mult = 0 }
 				local suit_config = Jen.config.suit_leveling[d] or { chips = 0, mult = 0 }
 				local rank_data = G.GAME.ranks[b] or
-				{ level = 1, l_chips = rank_config.chips, l_mult = rank_config.mult }
+					{ level = 1, l_chips = rank_config.chips, l_mult = rank_config.mult }
 				local suit_data = G.GAME.suits[d] or
-				{ level = 1, l_chips = suit_config.chips, l_mult = suit_config.mult }
+					{ level = 1, l_chips = suit_config.chips, l_mult = suit_config.mult }
 				return {
 					vars = {
 						rank_data.level,
