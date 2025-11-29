@@ -97,7 +97,7 @@ Jen.config = {
   straddle = {
     enabled = CFG.straddle,
     acceleration = true,
-    skip_animation = false,
+    skip_animation = CFG.straddle_skip_animation,
     backwards_mod = 2,
     progress_min = 3,
     progress_max = 7,
@@ -160,7 +160,8 @@ Jen.config = {
 -- Precompute blind scalars
 Jen.blind_scalar = {}
 for i = 1, Jen.config.ante_polytate do
-  Jen.blind_scalar[i] = to_big(1 + (Jen.config.scalar_base + (i/Jen.config.scalar_additivedivisor))) ^ to_big(i * Jen.config.scalar_exponent)
+  Jen.blind_scalar[i] = to_big(1 + (Jen.config.scalar_base + (i / Jen.config.scalar_additivedivisor))) ^
+  to_big(i * Jen.config.scalar_exponent)
 end
 
 -- Modifier badges configuration
@@ -216,4 +217,3 @@ Jen.modifierbadges = {
     tcol = G.C.SECONDARY_SET.Planet
   }
 }
-
