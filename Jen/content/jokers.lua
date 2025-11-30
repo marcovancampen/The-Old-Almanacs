@@ -2694,10 +2694,8 @@ function Card:do_jen_astronomy(hand, mod)
             end
         end
         iterations = iterations * mod
-        if iterations > mod then
-            jl.th(hand)
-            fastlv(self, hand, nil, iterations - mod)
-        end
+        jl.th(hand)
+        fastlv(self, hand, nil, iterations)
         local forehand = G.handlist[pos + 1]
         local backhand = G.handlist[pos - 1]
         local forehand2 = G.handlist[pos + 2]

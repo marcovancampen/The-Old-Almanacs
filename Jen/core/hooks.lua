@@ -138,19 +138,20 @@ function update_score_intensity()
     if not G.ARGS.score_intensity.ambientSurreal1 then G.ARGS.score_intensity.ambientSurreal1 = 0 end
     G.ARGS.score_intensity.ambientDramatic = notzero and requirement5:to_number() or 0
     G.ARGS.score_intensity.ambientSinister = ((G.ARGS.score_intensity.ambientDramatic or 0) <= 0.05 and notzero) and
-    requirement4:to_number() or 0
+        requirement4:to_number() or 0
     if Jen and type(Jen) == 'table' then
       Jen.dramatic = G.ARGS.score_intensity.ambientDramatic > 0
       Jen.sinister = G.ARGS.score_intensity.ambientSinister > 0 or Jen.dramatic
     end
     G.ARGS.score_intensity.ambientSurreal3 = (not Jen.dramatic and not Jen.sinister) and requirement3:to_number() or 0
     G.ARGS.score_intensity.ambientSurreal2 = ((not Jen.dramatic and not Jen.sinister) and (G.ARGS.score_intensity.ambientSurreal3 or 0) <= 0.05 and notzero) and
-    requirement2:to_number() or 0
+        requirement2:to_number() or 0
     G.ARGS.score_intensity.ambientSurreal1 = ((not Jen.dramatic and not Jen.sinister) and (G.ARGS.score_intensity.ambientSurreal3 or 0) <= 0.05 and (G.ARGS.score_intensity.ambientSurreal2 or 0) <= 0.05 and notzero) and
-    requirement1 or 0
+        requirement1 or 0
     G.ARGS.score_intensity.organ = (G.video_organ or ((G.ARGS.score_intensity.ambientSurreal3 or 0) <= 0.05 and (G.ARGS.score_intensity.ambientSurreal2 or 0) <= 0.05 and (G.ARGS.score_intensity.ambientSurreal1 or 0) <= 0.05 and notzero)) and
-    math.max(math.min(1, 0.1 * math.log(G.ARGS.score_intensity.earned_score / (G.ARGS.score_intensity.required_score + 1),
-      5)), 0.) or 0
+        math.max(
+          math.min(1, 0.1 * math.log(G.ARGS.score_intensity.earned_score / (G.ARGS.score_intensity.required_score + 1),
+            5)), 0.) or 0
     notzero = nil
     e_s = nil
     r_s = nil
@@ -197,7 +198,7 @@ function eval_card(card, context)
       card_eval_status_text(card, 'extra', nil, nil, nil, { message = localize('k_upgrade_ex'), colour = G.C.FILTER })
       card.ability.wee_upgrades = (card.ability.wee_upgrades or 0) + (G.GAME.weeck and 3 or 1)
       card.ability.perma_bonus = (card.ability.perma_bonus or 0) +
-      ((((card.ability.name or '') == 'Stone Card' or card.config.center.no_rank) and 25 or card:get_id() == 2 and 60 or (card:get_id() * 3)) * (G.GAME.weeck and 3 or 1))
+          ((((card.ability.name or '') == 'Stone Card' or card.config.center.no_rank) and 25 or card:get_id() == 2 and 60 or (card:get_id() * 3)) * (G.GAME.weeck and 3 or 1))
       card_eval_status_text(card, 'extra', nil, nil, nil,
         { message = number_format(card.ability.perma_bonus), colour = G.C.CHIPS })
     end
@@ -513,7 +514,7 @@ function SMODS.create_mod_badges(obj, badges)
       local calced_text_width = 0
       for _, c in utf8.chars(text) do
         local tx = font.FONT:getWidth(c) * (0.33 * size) * G.TILESCALE * font.FONTSCALE +
-        2.7 * 1 * G.TILESCALE * font.FONTSCALE
+            2.7 * 1 * G.TILESCALE * font.FONTSCALE
         calced_text_width = calced_text_width + tx / (G.TILESIZE * G.TILESCALE)
       end
       local scale_fac = calced_text_width > max_text_width and max_text_width / calced_text_width or 1
@@ -582,7 +583,7 @@ function SMODS.create_mod_badges(obj, badges)
           local calced_text_width = 0
           for _, c in utf8.chars(text) do
             local tx = font.FONT:getWidth(c) * (0.33 * size) * G.TILESCALE * font.FONTSCALE +
-            2.7 * 1 * G.TILESCALE * font.FONTSCALE
+                2.7 * 1 * G.TILESCALE * font.FONTSCALE
             calced_text_width = calced_text_width + tx / (G.TILESIZE * G.TILESCALE)
           end
           local scale_fac = calced_text_width > max_text_width and max_text_width / calced_text_width or 1
@@ -864,7 +865,7 @@ function Game:update(dt)
     cache.faceless = cache.faceless or (next(SMODS.find_card('j_jen_faceless')) and true or false)
     cache.crimbo = cache.crimbo or (next(SMODS.find_card('j_jen_crimbo')) and true or false)
     cache.kudaai_or_foundry = cache.kudaai_or_foundry or
-    ((#SMODS.find_card('j_jen_kudaai') + #SMODS.find_card('j_jen_foundry')) > 0)
+        ((#SMODS.find_card('j_jen_kudaai') + #SMODS.find_card('j_jen_foundry')) > 0)
     cache.bulwark_count = cache.bulwark_count or #SMODS.find_card('j_jen_bulwark')
     -- Process Wondergeist jobs if queued
     if G.GAME._wg_jobs then
@@ -1007,7 +1008,7 @@ function Game:update(dt)
       if not G.GAME.modifiers.jen_initialise_buffs then
         G.GAME.modifiers.jen_initialise_buffs = true
         G.GAME.modifiers.cry_booster_packs = (G.GAME.modifiers.cry_booster_packs or 2) +
-        Jen.config.shop_booster_pack_count_buff
+            Jen.config.shop_booster_pack_count_buff
         change_shop_size(Jen.config.shop_size_buff)
         SMODS.change_voucher_limit(Jen.config.shop_voucher_count_buff)
       end
@@ -1061,10 +1062,10 @@ function Game:update(dt)
     end
 
     Jen.should_play_extraordinary = #Cryptid.advanced_find_joker(nil, "jen_extraordinary", nil, nil, true) ~= 0 or
-    get_kosmos() or #Cryptid.advanced_find_joker(nil, "jen_transcendent", nil, nil, true) ~= 0 or
-    #Cryptid.advanced_find_joker(nil, "jen_omegatranscendent", nil, nil, true) ~= 0
+        get_kosmos() or #Cryptid.advanced_find_joker(nil, "jen_transcendent", nil, nil, true) ~= 0 or
+        #Cryptid.advanced_find_joker(nil, "jen_omegatranscendent", nil, nil, true) ~= 0
     Jen.should_play_wondrous = not Jen.should_play_extraordinary and
-    #Cryptid.advanced_find_joker(nil, "jen_wondrous", nil, nil, true) ~= 0
+        #Cryptid.advanced_find_joker(nil, "jen_wondrous", nil, nil, true) ~= 0
   end
 end
 
@@ -1379,7 +1380,7 @@ function Card.add_to_deck(self, from_debuff)
           end
         end
         self:blackhole(((self.ability.partial_rounds or 0) * 0.5) + ((self.ability.upgrade_rounds or 0) * 0.25) +
-        ((self.ability.val or 0) * ((self.ability.upgrade_rounds or 0) * 5)))
+          ((self.ability.val or 0) * ((self.ability.upgrade_rounds or 0) * 5)))
       end
     end
     jl.jokers({ jen_adding_card = true, card = self })
@@ -1756,4 +1757,11 @@ function G.UIDEF.use_and_sell_buttons(card)
     end
   end
   return guiduasbr(card)
+end
+
+-- Fallback for getEvalQty if missing (fixes crash in jokers.lua)
+if not Card.getEvalQty then
+  function Card:getEvalQty()
+    return (self.ability and self.ability.qty) or 1
+  end
 end
